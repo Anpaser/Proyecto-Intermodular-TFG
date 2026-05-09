@@ -1,4 +1,4 @@
-package com.example.proyectointermodulartfg;
+package com.example.proyectointermodulartfg.controlador;
 
 import io.github.jan.supabase.SupabaseClient;
 import io.github.jan.supabase.SupabaseClientBuilder;

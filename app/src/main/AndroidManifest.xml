@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,7 +14,40 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProyectoIntermodularTFG">
         <activity
-            android:name=".Pantalla_de_inicio"
+            android:name=".vista.Pantalla_historial_ventas_realizadas"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_historial_pedidos_realizados"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_pago_compra"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_productos_a_la_venta"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_carrito_productos"
+            android:exported="false" />
+        <activity
+            android:name=".Pantalla_ajustes"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_perfil"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_recuperar_contrasena"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_registrarse"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_principal"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_login"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_de_carga"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
