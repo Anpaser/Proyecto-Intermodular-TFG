@@ -3,18 +3,34 @@ package com.example.proyectointermodulartfg.modelo;
 public class Usuario {
     private long id;
     private  String nombre;
-    private String email;
+    private String correo;
     private String clave;
     private long id_rol;
+    private String telefono;
 
     public Usuario(){}
 
-    public Usuario(long id, String nombre, String email, String clave, long id_rol){
+    public Usuario(String correo, String clave){
+        this.correo = correo;
+        this.clave = clave;
+    }
+
+    public Usuario(String nombre, String correo, String clave, String telefono){
+        this.nombre = nombre;
+        this.correo = correo;
+        this.clave = clave;
+        this.id_rol = 2;
+        this.telefono = telefono;
+    }
+
+    public Usuario(long id, String nombre, String correo, long id_rol, String clave, String telefono){
         this.id = id;
         this.nombre = nombre;
-        this.email = email;
+        this.correo = correo;
         this.clave = clave;
         this.id_rol = id_rol;
+        this.telefono = telefono;
+
     }
 
     public long getId() {
@@ -33,17 +49,15 @@ public class Usuario {
         this.nombre = nombre;
     }
 
-    public String getEmail() {
-        return email;
+    public String getCorreo() {
+        return correo;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
-    public String getClave() {
-        return clave;
-    }
+    public String getClave() { return clave; }
 
     public void setClave(String clave) {
         this.clave = clave;
@@ -57,14 +71,19 @@ public class Usuario {
         this.id_rol = id_rol;
     }
 
+    public String getTelefono() { return telefono; }
+
+    public void setTelefono(String telefono) { this.telefono = telefono; }
+
     @Override
     public String toString() {
         return "Usuario{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
-                ", email='" + email + '\'' +
+                ", correo='" + correo + '\'' +
                 ", clave='" + clave + '\'' +
                 ", id_rol=" + id_rol +
+                ", telefono='" + telefono + '\'' +
                 '}';
     }
 }

@@ -23,7 +23,7 @@
             android:name=".vista.Pantalla_pago_compra"
             android:exported="false" />
         <activity
-            android:name=".vista.Pantalla_productos_a_la_venta"
+            android:name=".vista.Pantalla_productos_en_venta"
             android:exported="false" />
         <activity
             android:name=".vista.Pantalla_carrito_productos"
