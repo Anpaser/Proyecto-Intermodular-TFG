@@ -103,28 +103,40 @@ public class Pantalla_login extends AppCompatActivity {
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
             String idToken = account.getIdToken();
             String correo = account.getEmail();
+            String nombreGoogle = account.getDisplayName();
 
             new Thread(() -> {
-                boolean exito = SupabaseHelper.logearConGoogle(idToken);
-                runOnUiThread(() -> {
-                    if (exito) {
+                boolean exitoAuth = SupabaseHelper.logearConGoogle(idToken);
+
+                if (exitoAuth) {
+                    boolean existeEnTabla = SupabaseHelper.existeUsuario(correo);
+
+                    if (!existeEnTabla) {
+                        Usuario nuevo = new Usuario();
+                        nuevo.setCorreo(correo);
+                        nuevo.setNombre(nombreGoogle != null ? nombreGoogle : "Usuario de Google");
+                        nuevo.setClave("OAUTH_USER");
+
+                        SupabaseHelper.registrarUsuario(nuevo);
+                    }
+
+                    runOnUiThread(() -> {
                         confirmacionLoginRealizado(correo);
                         Intent intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
-                    } else {
-                        Toast.makeText(this, "Supabase no pudo validar la sesión de Google", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "Error en Supabase Auth", Toast.LENGTH_SHORT).show());
+                }
             }).start();
 
         } catch (ApiException e) {
             Log.e("GoogleAuth", "Error: " + e.getStatusCode());
-            Toast.makeText(this, "Error de Google: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Fallo inicio sesión: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
         }
     }
 

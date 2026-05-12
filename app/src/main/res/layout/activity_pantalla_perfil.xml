@@ -73,12 +73,13 @@
                     android:orientation="vertical">
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnHistorialPedidos"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Historial de Pedidos"
                         android:gravity="start|center_vertical"
                         android:paddingStart="16dp"
+                        android:text="Historial de Pedidos"
                         android:textColor="@color/black"
                         app:iconTint="#555555" />
 
@@ -112,12 +113,50 @@
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnHistorialVentas"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Historial de Ventas"
                         android:gravity="start|center_vertical"
                         android:paddingStart="16dp"
+                        android:text="Historial de Ventas"
+                        android:textColor="@color/black"
+                        app:iconTint="#555555" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modificar datos de la cuenta"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@android:color/holo_purple"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnModificarDatos"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:gravity="start|center_vertical"
+                        android:paddingStart="16dp"
+                        android:text="Modificar datos"
                         android:textColor="@color/black"
                         app:iconTint="#555555" />
                 </LinearLayout>

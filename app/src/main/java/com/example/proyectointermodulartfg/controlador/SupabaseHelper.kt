@@ -68,4 +68,21 @@ object SupabaseHelper {
             }
         }
     }
+
+    @JvmStatic
+    fun obtenerDatosTablas(tabla: String, columna: String, valorFiltro: String): String? {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                val respuesta = client.postgrest.from(tabla)
+                    .select { filter {
+                        eq(columna, valorFiltro)
+                    }
+                }
+                if (respuesta.data == "[]") null else respuesta.data
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
 }

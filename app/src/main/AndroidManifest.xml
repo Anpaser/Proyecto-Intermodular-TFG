@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProyectoIntermodularTFG">
         <activity
+            android:name=".vista.Pantalla_modificar_datos_usuario"
+            android:exported="false" />
+        <activity
             android:name=".vista.Pantalla_historial_ventas_realizadas"
             android:exported="false" />
         <activity
