@@ -76,21 +76,28 @@ public class Pantalla_registrarse extends AppCompatActivity {
         }
 
         new Thread(() -> {
-            Usuario usuario = new Usuario(nombre, correo, telefono, clave);
-            boolean resultado = SupabaseHelper.registrarUsuario(usuario);
-            runOnUiThread(() -> {
-                if (resultado) {
-                    Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show();
-                    irAlLogin();
-                } else {
-                    Toast.makeText(this, "Error al registrar al usuario", Toast.LENGTH_SHORT).show();
-                    etNombreUsuario.setText("");
-                    etCorreoElectronico.setText("");
-                    etTelefono.setText("");
-                    etClave.setText("");
-                    etClaveRepetida.setText("");
-                }
-            });
+            Usuario usuario = new Usuario(nombre, correo, clave, telefono);
+            boolean usuarioYaRegistrado = SupabaseHelper.existeUsuario(correo);
+            if (usuarioYaRegistrado) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Este correo ya está registrado en la app", Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                boolean resultado = SupabaseHelper.registrarUsuario(usuario);
+                runOnUiThread(() -> {
+                    if (resultado) {
+                        Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show();
+                        irAlLogin();
+                    } else {
+                        Toast.makeText(this, "Error al registrar al usuario", Toast.LENGTH_SHORT).show();
+                        etNombreUsuario.setText("");
+                        etCorreoElectronico.setText("");
+                        etTelefono.setText("");
+                        etClave.setText("");
+                        etClaveRepetida.setText("");
+                    }
+                });
+            }
         }).start();
     }
 }

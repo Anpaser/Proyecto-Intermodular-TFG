@@ -29,9 +29,6 @@
             android:name=".vista.Pantalla_carrito_productos"
             android:exported="false" />
         <activity
-            android:name=".Pantalla_ajustes"
-            android:exported="false" />
-        <activity
             android:name=".vista.Pantalla_perfil"
             android:exported="false" />
         <activity

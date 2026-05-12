@@ -1,26 +1,179 @@
 package com.example.proyectointermodulartfg.vista;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.proyectointermodulartfg.R;
+import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
+import com.example.proyectointermodulartfg.modelo.Usuario;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 
+@SuppressWarnings("deprecation")
 public class Pantalla_login extends AppCompatActivity {
+    private EditText etCorreo, etClave;
+    private TextView tvRecuperarClave, tvRegistrarse;
+    private Button btnLogin;
+    private MaterialButton btnGoogleLogin;
+    private GoogleSignInClient mGoogleSignInClient;
+    private ActivityResultLauncher<Intent> googleLauncher;
+    private final String WEB_CLIENT_ID = "491560371485-56c1ir2utkud03vmord2ak6qb2mhc8jt.apps.googleusercontent.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_pantalla_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        etCorreo = findViewById(R.id.etEmail);
+        etClave = findViewById(R.id.etPassword);
+        tvRecuperarClave = findViewById(R.id.tvOlvidoClave);
+        tvRegistrarse = findViewById(R.id.tvRegister);
+        btnLogin = findViewById(R.id.btnLogin);
+        btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(WEB_CLIENT_ID)
+                .requestEmail()
+                .build();
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        googleLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                        handleSignInResult(task);
+                    }
+                }
+        );
+
+        tvRecuperarClave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recuperarClave();
+            }
         });
+
+        tvRegistrarse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                registrarse();
+            }
+        });
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                login();
+            }
+        });
+
+        btnGoogleLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                lanzarLoginGoogle();
+            }
+        });
+    }
+
+    private void lanzarLoginGoogle() {
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        googleLauncher.launch(signInIntent);
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+
+            String idToken = account.getIdToken();
+            String correo = account.getEmail();
+
+            new Thread(() -> {
+                boolean exito = SupabaseHelper.logearConGoogle(idToken);
+                runOnUiThread(() -> {
+                    if (exito) {
+                        confirmacionLoginRealizado(correo);
+                        Intent intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Supabase no pudo validar la sesión de Google", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }).start();
+
+        } catch (ApiException e) {
+            Log.e("GoogleAuth", "Error: " + e.getStatusCode());
+            Toast.makeText(this, "Error de Google: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void recuperarClave() {
+        String correo = etCorreo.getText().toString().trim();
+        Intent intent = new Intent(Pantalla_login.this, Pantalla_recuperar_contrasena.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("correo", correo);
+        startActivity(intent);
+    }
+
+    private void registrarse() {
+        String correo = etCorreo.getText().toString().trim();
+        Intent intent = new Intent(Pantalla_login.this, Pantalla_registrarse.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("correo", correo);
+        startActivity(intent);
+    }
+
+    private void login() {
+        String correo = etCorreo.getText().toString().trim();
+        String clave = etClave.getText().toString().trim();
+
+        if(correo.isEmpty() || clave.isEmpty()) {
+            Toast.makeText(this, "Debes rellenar todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        } else {
+            new Thread(() -> {
+                Usuario usuario = new Usuario(correo, clave);
+                boolean existe = SupabaseHelper.logearUsuario(usuario);
+                runOnUiThread(() -> {
+                    if (existe) {
+                        confirmacionLoginRealizado(correo);
+                        Intent intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(this, "El usuario o contraseña son incorrectos", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }).start();
+        }
+    }
+
+    private void confirmacionLoginRealizado(String correo) {
+        SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("correo_usuario", correo);
+        editor.apply();
     }
 }
