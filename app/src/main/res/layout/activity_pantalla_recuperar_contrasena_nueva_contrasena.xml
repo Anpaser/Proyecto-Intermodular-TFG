@@ -30,22 +30,12 @@
             android:textColor="@color/black"
             android:gravity="center"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:text="Introduce tu correo electrónico asociado a Comprahhoy. Te enviaremos un código para que puedas restablecerla."
-            android:textColor="#757575"
-            android:textSize="14sp" />
-
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:hint="Correo electrónico"
+            android:layout_marginTop="110dp"
+            android:hint="Nueva contraseña"
             app:boxCornerRadiusTopStart="16dp"
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusBottomStart="16dp"
@@ -53,18 +43,37 @@
             app:boxStrokeColor="@android:color/holo_purple">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etEmailRecuperar"
+                android:id="@+id/etNuevaContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Repetir nueva contraseña"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxStrokeColor="@android:color/holo_purple">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNuevaContrasenaRep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEnviarCodigoVerificacion"
+            android:id="@+id/btnCambiarContrasena"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="32dp"
-            android:text="ENVIAR CÓDIGO"
+            android:text="MODIFICAR"
             android:textSize="16sp"
             android:textStyle="bold"
             app:backgroundTint="@android:color/holo_purple"
@@ -72,7 +81,7 @@
             app:elevation="4dp" />
 
         <TextView
-            android:id="@+id/tvVolverLogin"
+            android:id="@+id/tvVolverLoginNuevaContrasena"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"

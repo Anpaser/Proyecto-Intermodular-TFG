@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -83,7 +84,13 @@ public class Pantalla_login extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                login();
+                new Thread(() -> {
+                    String correo = etCorreo.getText().toString().trim();
+                    boolean validador = SupabaseHelper.estructuraCorreoValida(correo);
+                    runOnUiThread(() -> {
+                        if (validador) login(); else Toast.makeText(Pantalla_login.this, "El correo tiene un formato invalido", Toast.LENGTH_SHORT).show();
+                    });
+                }).start();
             }
         });
 

@@ -18,7 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Pantalla_perfil extends AppCompatActivity {
-    private MaterialButton btnHistorialPedidos, btnHistorialVentas, btnModificarDatos, btnCerrarSesion;
+    private MaterialButton btnHistorialPedidos, btnHistorialVentas, btnDatosUsuario, btnModificarDatos, btnCerrarSesion;
     private TextView tvNombreUsuario, tvCorreoUsuario;
 
     @Override
@@ -29,6 +29,7 @@ public class Pantalla_perfil extends AppCompatActivity {
 
         btnHistorialPedidos = findViewById(R.id.btnHistorialPedidos);
         btnHistorialVentas = findViewById(R.id.btnHistorialVentas);
+        btnDatosUsuario = findViewById(R.id.btnDatosUsuario);
         btnModificarDatos = findViewById(R.id.btnModificarDatos);
         btnCerrarSesion = findViewById(R.id.btnLogout);
         tvNombreUsuario = findViewById(R.id.tvNombrePerfil);
@@ -45,6 +46,13 @@ public class Pantalla_perfil extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 moverAOtraPantalla(Pantalla_historial_ventas_realizadas.class);
+            }
+        });
+
+        btnDatosUsuario.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moverAOtraPantalla(Pantalla_datos_personales_usuario.class);
             }
         });
 

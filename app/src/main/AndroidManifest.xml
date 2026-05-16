@@ -14,6 +14,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProyectoIntermodularTFG">
         <activity
+            android:name=".vista.Pantalla_datos_personales_usuario"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_recuperar_contrasena_nuevaContrasena"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_recuperar_contrasena_codigoVerificacion"
+            android:exported="false" />
+        <activity
             android:name=".vista.Pantalla_modificar_datos_usuario"
             android:exported="false" />
         <activity
