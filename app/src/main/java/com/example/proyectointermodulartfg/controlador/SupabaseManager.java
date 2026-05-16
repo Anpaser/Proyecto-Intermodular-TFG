@@ -2,6 +2,7 @@ package com.example.proyectointermodulartfg.controlador;
 
 import io.github.jan.supabase.SupabaseClient;
 import io.github.jan.supabase.SupabaseClientBuilder;
+import io.github.jan.supabase.gotrue.Auth;
 import io.github.jan.supabase.postgrest.Postgrest;
 import kotlin.Unit;
 
@@ -16,7 +17,10 @@ public class SupabaseManager {
     public static synchronized SupabaseClient getInstance() {
         if (instancia == null) {
             SupabaseClientBuilder builder = new SupabaseClientBuilder(URL, CLAVE);
+
             builder.install(Postgrest.Companion, config -> { return Unit.INSTANCE; });
+            builder.install(Auth.Companion, config -> { return Unit.INSTANCE; });
+
             instancia = builder.build();
         }
         return instancia;

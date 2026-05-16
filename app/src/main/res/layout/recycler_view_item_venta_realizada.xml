@@ -53,8 +53,7 @@
                     android:id="@+id/ivVentaProductoImagen"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/placeholder_producto" />
+                    android:scaleType="centerCrop" />
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout

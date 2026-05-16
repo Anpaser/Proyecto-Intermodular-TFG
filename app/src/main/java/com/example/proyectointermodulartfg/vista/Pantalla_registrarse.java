@@ -75,6 +75,10 @@ public class Pantalla_registrarse extends AppCompatActivity {
             return;
         }
 
+        if (telefono.length() != 9) {
+            Toast.makeText(this, "El número de teléfono debe contener 9 caracteres", Toast.LENGTH_SHORT).show();
+        }
+
         new Thread(() -> {
             Usuario usuario = new Usuario(nombre, correo, clave, telefono);
             boolean usuarioYaRegistrado = SupabaseHelper.existeUsuario(correo);
