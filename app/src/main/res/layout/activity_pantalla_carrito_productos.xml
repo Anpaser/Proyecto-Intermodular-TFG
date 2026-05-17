@@ -4,44 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#F8F9FA"
+    android:fitsSystemWindows="true"> <RelativeLayout
+    android:id="@+id/toolbarCarrito"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:background="@color/white"
+    app:layout_constraintTop_toTopOf="parent">
 
-    <RelativeLayout
-        android:id="@+id/toolbarCarrito"
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/btnBackCarrito"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerVertical="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:tint="@android:color/holo_purple" />
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@color/white"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageButton
-            android:id="@+id/btnBackCarrito"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/outline_arrow_back_ios_24"
-            app:tint="@android:color/holo_purple" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Mi Carrito"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
-    </RelativeLayout>
+        android:layout_centerInParent="true"
+        android:text="Mi Carrito"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black" />
+</RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCarrito"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toTopOf="@+id/layoutResumen"
         app:layout_constraintTop_toBottomOf="@id/toolbarCarrito"
         tools:listitem="@layout/recycler_view_item_pantalla_carrito"
-        tools:spanCount="1"
-        tools:layoutManager="GridLayoutManager" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/layoutResumen"
@@ -57,30 +60,29 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp"
-            android:paddingBottom="40dp">
+            android:paddingBottom="44dp"> <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                android:text="Total a pagar:"
+                android:textSize="16sp"
+                android:textColor="#757575" />
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Total a pagar:"
-                    android:textSize="16sp"
-                    android:textColor="#757575" />
-
-                <TextView
-                    android:id="@+id/tvTotalPrecio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="145.50 €"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/holo_purple" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tvTotalPrecio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="145.50 €"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/holo_purple" />
+        </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPagar"

@@ -9,6 +9,7 @@ import io.github.jan.supabase.gotrue.providers.builtin.IDToken
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.runBlocking
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -153,33 +154,28 @@ object SupabaseHelper {
 
     // GESTIÓN DE PRODUCTOS
     @JvmStatic
-    fun buscarProductos(nombreBusqueda: String, categoria: String): List<Map<String, Any>> {
+    fun buscarProductos(nombreBusqueda: String, categoria: String): List<JsonObject> {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
 
-                val misColumnas = Columns.raw("""
-                id, 
-                id_usuario, 
-                nombre, 
-                precio, 
-                imagen, 
-                Categorias(nombre_categoria), 
-                Usuarios(nombre)
-            """.trimIndent())
+                val columnas = Columns.raw("*,Categorias(nombre_categoria)")
 
-                val respuesta = client.postgrest.from("Productos").select(misColumnas) {
-                    if (nombreBusqueda.isNotEmpty()) {
-                        filter { ilike("nombre", "%$nombreBusqueda%") }
-                    }
-                    if (categoria != "Todos") {
-                        filter { eq("id_categoria.nombre_categoria", categoria) }
+                val respuesta = client.postgrest.from("Productos").select(columns = columnas) {
+                    filter {
+                        if (nombreBusqueda.isNotEmpty()) {
+                            ilike("nombre", "%$nombreBusqueda%")
+                        }
+
+                        if (categoria != "Todos" && categoria.isNotEmpty()) {
+                            eq("Categorias.nombre_categoria", categoria)
+                        }
                     }
                 }
 
-                respuesta.decodeList<Map<String, Any>>()
+                respuesta.decodeList<JsonObject>()
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("SUPABASE_ERROR", "Error en la query: ${e.message}")
                 emptyList()
             }
         }

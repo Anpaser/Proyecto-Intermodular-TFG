@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#F8F9FA"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -11,32 +13,49 @@
         android:background="@android:color/transparent"
         app:elevation="0dp">
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="32dp">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tvNombrePerfil"
-                android:layout_width="wrap_content"
+            <ImageButton
+                android:id="@+id/btnBackPerfil"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Volver"
+                android:src="@drawable/outline_arrow_back_ios_24"
+                app:tint="@android:color/holo_purple" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Ángel Paredes"
-                android:textColor="@color/black"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="48dp"
+                android:paddingBottom="32dp">
 
-            <TextView
-                android:id="@+id/tvEmailPerfil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="aparedes@example.com"
-                android:textColor="#757575"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/tvNombrePerfil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Ángel Paredes Serrano"
+                    android:textColor="@color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvEmailPerfil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="angelparedesserrano6@gmail.com"
+                    android:textColor="#757575"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+        </FrameLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -48,170 +67,145 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="40dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp"
                 android:text="Mis Compras"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@android:color/holo_purple"/>
+                android:textColor="@android:color/holo_purple"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="28dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp">
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHistorialPedidos"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnHistorialPedidos"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"
-                        android:text="Historial de Pedidos"
-                        android:textColor="@color/black"
-                        app:iconTint="#555555" />
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
-                </LinearLayout>
+                    android:layout_height="64dp"
+                    android:gravity="start|center_vertical"
+                    android:letterSpacing="0.05"
+                    android:paddingHorizontal="20dp"
+                    android:text="HISTORIAL DE PEDIDOS"
+                    android:textColor="@color/black"
+                    app:iconTint="#555555" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp"
                 android:text="Mis Ventas"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@android:color/holo_purple"/>
+                android:textColor="@android:color/holo_purple"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="28dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp">
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHistorialVentas"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnHistorialVentas"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"
-                        android:text="Historial de Ventas"
-                        android:textColor="@color/black"
-                        app:iconTint="#555555" />
-                </LinearLayout>
+                    android:layout_height="64dp"
+                    android:gravity="start|center_vertical"
+                    android:letterSpacing="0.05"
+                    android:paddingHorizontal="20dp"
+                    android:text="HISTORIAL DE VENTAS"
+                    android:textColor="@color/black"
+                    app:iconTint="#555555" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp"
                 android:text="Datos del usuario"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@android:color/holo_purple"/>
+                android:textColor="@android:color/holo_purple"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="28dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp">
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDatosUsuario"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDatosUsuario"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"
-                        android:text="Datos personales"
-                        android:textColor="@color/black"
-                        app:iconTint="#555555" />
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
-                </LinearLayout>
+                    android:layout_height="64dp"
+                    android:gravity="start|center_vertical"
+                    android:letterSpacing="0.05"
+                    android:paddingHorizontal="20dp"
+                    android:text="DATOS PERSONALES"
+                    android:textColor="@color/black"
+                    app:iconTint="#555555" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp"
                 android:text="Modificar datos de la cuenta"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@android:color/holo_purple"/>
+                android:textColor="@android:color/holo_purple"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="32dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp">
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnModificarDatos"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnModificarDatos"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"
-                        android:text="Modificar datos"
-                        android:textColor="@color/black"
-                        app:iconTint="#555555" />
-                </LinearLayout>
+                    android:layout_height="64dp"
+                    android:gravity="start|center_vertical"
+                    android:letterSpacing="0.05"
+                    android:paddingHorizontal="20dp"
+                    android:text="MODIFICAR DATOS"
+                    android:textColor="@color/black"
+                    app:iconTint="#555555" />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:layout_marginBottom="16dp"
                 android:text="CERRAR SESIÓN"
                 android:textColor="@android:color/holo_red_dark"
+                android:textStyle="bold"
                 app:backgroundTint="@color/white"
+                app:cornerRadius="20dp"
                 app:strokeColor="@android:color/holo_red_dark"
-                app:strokeWidth="1dp"
-                app:cornerRadius="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="32dp"/>
+                app:strokeWidth="1.5dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

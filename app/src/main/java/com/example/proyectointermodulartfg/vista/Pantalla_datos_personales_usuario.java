@@ -1,7 +1,10 @@
 package com.example.proyectointermodulartfg.vista;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +22,7 @@ import org.json.JSONObject;
 
 public class Pantalla_datos_personales_usuario extends AppCompatActivity {
     private TextView tvNombre, tvCorreo, tvTelefono, tvFechaCreacion;
+    private ImageButton ibAtras;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,16 @@ public class Pantalla_datos_personales_usuario extends AppCompatActivity {
         tvCorreo = findViewById(R.id.tvDatoCorreo);
         tvTelefono = findViewById(R.id.tvDatoTelefono);
         tvFechaCreacion = findViewById(R.id.tvDatoFecha);
+        ibAtras = findViewById(R.id.btnBackDatos);
+
+        ibAtras.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Pantalla_datos_personales_usuario.this, Pantalla_perfil.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
 
         obtenerDatos();
     }

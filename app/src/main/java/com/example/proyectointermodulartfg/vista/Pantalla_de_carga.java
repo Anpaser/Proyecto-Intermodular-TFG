@@ -11,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Pantalla_de_carga extends AppCompatActivity {
 
     @Override
@@ -35,10 +38,22 @@ public class Pantalla_de_carga extends AppCompatActivity {
         } else {
             new Thread(() -> {
                 boolean existe = SupabaseHelper.existeUsuario(correo);
+                String respuesta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
 
                 runOnUiThread(() -> {
+                    try {
+                    JSONArray array = new JSONArray(respuesta);
+
+                        if (array.length() > 0) {
+                            JSONObject objeto = array.getJSONObject(0);
+                            String nombreReal = objeto.getString("nombre");
+                            Toast.makeText(this, "Bienvenido/a " + nombreReal, Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Bienvenido/a USUARIO", Toast.LENGTH_SHORT).show();
+                    }
+
                     if (existe) {
-                        Toast.makeText(this, "Bienvenido " + correo, Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(Pantalla_de_carga.this, Pantalla_principal.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);

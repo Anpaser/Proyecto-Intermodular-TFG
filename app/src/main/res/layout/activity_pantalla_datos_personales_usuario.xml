@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#F8F9FA"
+    android:fitsSystemWindows="true"> <RelativeLayout
+    android:id="@+id/toolbarDatos"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:background="@color/white"
+    app:layout_constraintTop_toTopOf="parent">
 
-    <RelativeLayout
-        android:id="@+id/toolbarDatos"
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/btnBackDatos"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerVertical="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:tint="@android:color/holo_purple" />
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@color/white"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageButton
-            android:id="@+id/btnBackDatos"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/outline_arrow_back_ios_24"
-            app:tint="@android:color/holo_purple" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Datos Personales"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
-    </RelativeLayout>
+        android:layout_centerInParent="true"
+        android:text="Datos Personales"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black" />
+</RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/toolbarDatos"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -48,6 +52,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -68,7 +73,7 @@
                         android:id="@+id/tvDatoNombre"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Ángel Paredes"
+                        android:text="Ángel Paredes Serrano"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:layout_marginTop="4dp"
@@ -88,7 +93,7 @@
                         android:id="@+id/tvDatoCorreo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="aparedes@example.com"
+                        android:text="angelparedesserrano6@gmail.com"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:layout_marginTop="4dp"
@@ -108,7 +113,7 @@
                         android:id="@+id/tvDatoTelefono"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="+34 600 000 000"
+                        android:text="633762517"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:layout_marginTop="4dp"
@@ -128,7 +133,7 @@
                         android:id="@+id/tvDatoFecha"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="15 de Mayo, 2024"
+                        android:text="16 de Mayo, 2026"
                         android:textColor="@color/black"
                         android:textSize="16sp"
                         android:layout_marginTop="4dp"/>
@@ -139,7 +144,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
                 android:text="Tu información personal está protegida y solo tú puedes verla dentro de Comprahhoy."
                 android:textAlignment="center"
                 android:textColor="#9E9E9E"

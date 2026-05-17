@@ -4,82 +4,84 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white">
+    android:background="#F8F9FA"
+    android:fitsSystemWindows="true"> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="24dp"
+    android:gravity="center_horizontal">
 
-    <LinearLayout
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/outline_360_24"
+        app:tint="@android:color/holo_purple" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="¿Olvidaste tu contraseña?"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:layout_marginTop="32dp"
+        android:textColor="@color/black"
+        android:gravity="center"/>
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="32dp"
-        android:gravity="center_horizontal">
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:text="Introduce tu correo electrónico asociado a Comprahhoy. Te enviaremos un código para que puedas restablecerla."
+        android:textColor="#757575"
+        android:textSize="14sp" />
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="20dp"
-            android:src="@drawable/outline_360_24"
-            app:tint="@android:color/holo_purple" />
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:hint="Correo electrónico"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:boxStrokeColor="@android:color/holo_purple">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="¿Olvidaste tu contraseña?"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            android:textColor="@color/black"
-            android:gravity="center"/>
-
-        <TextView
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmailRecuperar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:text="Introduce tu correo electrónico asociado a Comprahhoy. Te enviaremos un código para que puedas restablecerla."
-            android:textColor="#757575"
-            android:textSize="14sp" />
+            android:inputType="textEmailAddress" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:hint="Correo electrónico"
-            app:boxCornerRadiusTopStart="16dp"
-            app:boxCornerRadiusTopEnd="16dp"
-            app:boxCornerRadiusBottomStart="16dp"
-            app:boxCornerRadiusBottomEnd="16dp"
-            app:boxStrokeColor="@android:color/holo_purple">
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEnviarCodigoVerificacion"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:text="ENVIAR CÓDIGO"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:backgroundTint="@android:color/holo_purple"
+        app:cornerRadius="16dp"
+        app:elevation="4dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etEmailRecuperar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textEmailAddress" />
-        </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:id="@+id/tvVolverLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:padding="12dp"
+        android:text="Recordé mi contraseña, volver"
+        android:textColor="@android:color/holo_purple"
+        android:textStyle="bold"
+        android:textSize="14sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEnviarCodigoVerificacion"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="32dp"
-            android:text="ENVIAR CÓDIGO"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:backgroundTint="@android:color/holo_purple"
-            app:cornerRadius="16dp"
-            app:elevation="4dp" />
-
-        <TextView
-            android:id="@+id/tvVolverLogin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Recordé mi contraseña, volver"
-            android:textColor="@android:color/holo_purple"
-            android:textStyle="bold"
-            android:textSize="14sp" />
-
-    </LinearLayout>
+</LinearLayout>
 </ScrollView>

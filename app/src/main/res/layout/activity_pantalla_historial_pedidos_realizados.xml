@@ -4,40 +4,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#F8F9FA"
+    android:fitsSystemWindows="true"> <RelativeLayout
+    android:id="@+id/toolbarHistorial"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:background="@color/white"
+    app:layout_constraintTop_toTopOf="parent">
 
-    <RelativeLayout
-        android:id="@+id/toolbarHistorial"
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/btnBackHistorial"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerVertical="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:tint="@android:color/holo_purple" />
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@color/white"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageButton
-            android:id="@+id/btnBackHistorial"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/outline_arrow_back_ios_24"
-            app:tint="@android:color/holo_purple" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Mis Pedidos"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
-    </RelativeLayout>
+        android:layout_centerInParent="true"
+        android:text="Mis Pedidos"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black" />
+</RelativeLayout>
 
     <HorizontalScrollView
         android:id="@+id/scrollFiltros"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        android:paddingHorizontal="16dp"
+        android:paddingHorizontal="24dp"
         android:paddingVertical="8dp"
         android:background="@color/white"
         app:layout_constraintTop_toBottomOf="@id/toolbarHistorial">
@@ -54,21 +56,24 @@
                 android:text="Todos"
                 android:checked="true"
                 app:chipBackgroundColor="@android:color/holo_purple"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                app:chipCornerRadius="12dp"/>
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="En camino" />
+                android:text="En camino"
+                app:chipCornerRadius="12dp"/>
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Entregados" />
+                android:text="Entregados"
+                app:chipCornerRadius="12dp"/>
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -76,12 +81,12 @@
         android:id="@+id/rvHistorial"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/scrollFiltros"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/recycler_view_item_pedido"
-        tools:spanCount="1"
-        tools:layoutManager="GridLayoutManager" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

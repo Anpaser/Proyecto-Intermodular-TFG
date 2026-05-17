@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import org.json.JSONObject;
 public class Pantalla_perfil extends AppCompatActivity {
     private MaterialButton btnHistorialPedidos, btnHistorialVentas, btnDatosUsuario, btnModificarDatos, btnCerrarSesion;
     private TextView tvNombreUsuario, tvCorreoUsuario;
+    private ImageButton ibAtras;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,7 @@ public class Pantalla_perfil extends AppCompatActivity {
         btnCerrarSesion = findViewById(R.id.btnLogout);
         tvNombreUsuario = findViewById(R.id.tvNombrePerfil);
         tvCorreoUsuario = findViewById(R.id.tvEmailPerfil);
+        ibAtras = findViewById(R.id.btnBackPerfil);
 
         btnHistorialPedidos.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +71,13 @@ public class Pantalla_perfil extends AppCompatActivity {
             public void onClick(View v) {
                 moverAOtraPantalla(Pantalla_login.class);
                 finish();
+            }
+        });
+
+        ibAtras.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moverAOtraPantalla(Pantalla_principal.class);
             }
         });
 

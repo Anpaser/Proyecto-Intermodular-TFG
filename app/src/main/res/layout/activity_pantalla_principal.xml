@@ -43,13 +43,13 @@
 
             <ImageView
                 android:id="@+id/ivUserProfile"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
+                android:layout_width="62dp"
+                android:layout_height="62dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/outline_account_circle"
                 android:contentDescription="Ir al perfil"
                 android:scaleType="fitCenter"
+                android:src="@drawable/outline_account_circle"
                 app:tint="@android:color/holo_purple" />
         </RelativeLayout>
 
@@ -64,7 +64,7 @@
             android:elevation="2dp"
             android:background="@android:color/white"
             android:iconifiedByDefault="false"
-            android:queryHint="Buscar moda, hogar..." />
+            android:queryHint="Encuentra lo que buscas" />
 
         <HorizontalScrollView
             android:id="@+id/scrollCategorias"
@@ -160,5 +160,12 @@
         app:layout_constraintEnd_toEndOf="@+id/fabCart"
         app:layout_constraintStart_toStartOf="@+id/fabCart"
         app:tint="@android:color/white" />
+
+    <include
+        android:id="@+id/detalle_producto_overlay"
+        layout="@layout/layout_detalle_producto_pantalla_principal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

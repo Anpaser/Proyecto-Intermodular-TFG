@@ -1,62 +1,172 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/redondeado_de_ventanas"
-    android:padding="24dp">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#CC000000"
+    android:clickable="true"
+    android:focusable="true">
 
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginHorizontal="16dp"
+        android:background="@drawable/redondeado_de_ventanas"
+        android:elevation="8dp">
 
-        <ImageView
-            android:id="@+id/ivDetalleImagen"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
-    </com.google.android.material.card.MaterialCardView>
+            android:layout_height="320dp">
 
-    <TextView
-        android:id="@+id/tvDetalleNombre"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Nombre del Producto"
-        android:textColor="@color/black"
-        android:textSize="22sp"
-        android:textStyle="bold" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp">
 
-    <TextView
-        android:id="@+id/tvDetallePrecio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="29.99 €"
-        android:textColor="@android:color/holo_purple"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+                <ImageView
+                    android:id="@+id/ivDetalleImagen"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+            </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:id="@+id/tvDetalleDescripcion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Aquí va la descripción detallada del producto. Es un artículo de alta calidad perfecto para tu TFG."
-        android:textColor="#666666"
-        android:textSize="14sp" />
+            <ImageButton
+                android:id="@+id/btnCerrarDetalle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_margin="12dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/black"
+                android:elevation="5dp"
+                android:contentDescription="Cerrar detalle" />
+        </RelativeLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAgregarAlCarrito"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginTop="24dp"
-        android:text="AÑADIR AL CARRITO"
-        android:textStyle="bold"
-        app:cornerRadius="16dp"
-        app:backgroundTint="@android:color/holo_purple" />
+        <TextView
+            android:id="@+id/tvDetalleNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:text="Nombre del Producto" />
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvDetallePrecio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/holo_purple"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:text="0.00 €" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvDetalleCategoria"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:textColor="@android:color/holo_purple"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:text="CATEGORÍA" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                app:tint="#666666" />
+
+            <TextView
+                android:id="@+id/tvDetalleVendedor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Vendido por: Usuario"
+                android:textColor="#666666"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginVertical="20dp" />
+
+        <TextView
+            android:id="@+id/tvDetalleStock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stock disponible: 0 unidades"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvAlertaStock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¡Últimas unidades disponibles!"
+            android:textColor="#E53935"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Descripción"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tvDetalleDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="#555555"
+            android:textSize="15sp"
+            android:text="Breve descripción del producto..." />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAgregarAlCarrito"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="32dp"
+            android:text="AÑADIR AL CARRITO"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@android:color/holo_purple" />
+
+    </LinearLayout>
+</ScrollView>
