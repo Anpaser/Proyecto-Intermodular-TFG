@@ -81,9 +81,11 @@ public class Pantalla_modificar_datos_usuario extends AppCompatActivity {
 
             if (!clave.isEmpty()) {
                 if (clave.equals(repClave) && clave.length() >= 6) {
-                    boolean okAuth = SupabaseHelper.actualizarPasswordAuth(clave);
+                    SupabaseHelper.actualizarPasswordAuth(clave);
+
                     boolean okTabla = SupabaseHelper.modificarDatosUsuario("clave", clave, correoActualUsuario);
-                    algunCambio = algunCambio || (okAuth && okTabla);
+
+                    algunCambio = algunCambio || okTabla;
                 } else {
                     errorClave = true;
                 }

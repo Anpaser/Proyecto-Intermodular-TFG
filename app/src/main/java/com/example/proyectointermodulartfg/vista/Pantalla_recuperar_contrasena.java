@@ -29,6 +29,8 @@ public class Pantalla_recuperar_contrasena extends AppCompatActivity {
         btnEnviarCorreo = findViewById(R.id.btnEnviarCodigoVerificacion);
         tvVolver = findViewById(R.id.tvVolverLogin);
 
+        obtenerCorreo();
+
         btnEnviarCorreo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,16 +62,27 @@ public class Pantalla_recuperar_contrasena extends AppCompatActivity {
 
         new Thread(() -> {
             boolean verificacionEnviar = SupabaseHelper.enviarCodigoRecuperacion(correo);
-            runOnUiThread(() -> {
-                if (verificacionEnviar) {
-                    Intent intent = new Intent(Pantalla_recuperar_contrasena.this, Pantalla_recuperar_contrasena_codigoVerificacion.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra("correo_recuperacion", correo);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(this, "Fallo en el proceso de envio del código", Toast.LENGTH_SHORT).show();
-                }
-            });
+            try {
+                runOnUiThread(() -> {
+                    if (verificacionEnviar) {
+                        Intent intent = new Intent(Pantalla_recuperar_contrasena.this, Pantalla_recuperar_contrasena_codigoVerificacion.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra("correo", correo);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(this, "Fallo en el proceso de envio del código", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
+    }
+
+    private void obtenerCorreo() {
+        String correoLog = getIntent().getStringExtra("correo");
+        if (!correoLog.isEmpty()) {
+            etCorreoRecuperar.setText(correoLog);
+        }
     }
 }

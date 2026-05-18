@@ -11,6 +11,7 @@ public class Producto {
     private String nombre_categoria;
     private int stock;
 
+    public Producto() {}
     public Producto(int id, int idUsuario, String nombreVendedor, String nombre, String descripcion, double precio, String imagen, String nombre_categoria, int stock) {
         this.id = id;
         this.idUsuario = idUsuario;

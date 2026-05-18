@@ -21,14 +21,15 @@ object SupabaseHelper {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
+                client.auth.signInWith(io.github.jan.supabase.gotrue.providers.builtin.Email) {
+                    email = usuario.correo
+                    password = usuario.clave
+                }
                 val response = client.postgrest.from("Usuarios")
-                    .select { filter {
-                        eq("correo", usuario.correo)
-                        eq("clave", usuario.clave)
-                    }
-                    }.data
+                    .select { filter { eq("correo", usuario.correo) } }.data
                 response != "[]" && response.isNotEmpty()
             } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_LOGIN", "Error en login sincronizado: ${e.message}")
                 false
             }
         }
@@ -56,9 +57,10 @@ object SupabaseHelper {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
-                client.auth.resendEmail(email = correo, type = OtpType.Email.RECOVERY)
+                client.auth.resetPasswordForEmail(email = correo)
                 true
             } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_AUTH", "Error: ${e.message}")
                 false
             }
         }
@@ -68,11 +70,16 @@ object SupabaseHelper {
     fun verificarCodigoResetearClave(correo: String, codigo: String, nuevaClave: String): Boolean {
         return runBlocking {
             try {
-                val client = SupabaseManager.getInstance();
+                val client = SupabaseManager.getInstance()
                 client.auth.verifyEmailOtp(type = OtpType.Email.RECOVERY, email = correo, token = codigo)
                 client.auth.updateUser { password = nuevaClave }
+                client.postgrest.from("Usuarios")
+                    .update({ set("clave", nuevaClave) }) {
+                        filter { eq("correo", correo) }
+                    }
                 true
             } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_RESET", "Error al resetear: ${e.message}")
                 false
             }
         }
@@ -114,7 +121,10 @@ object SupabaseHelper {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
-
+                client.auth.signUpWith(io.github.jan.supabase.gotrue.providers.builtin.Email) {
+                    email = nuevoUsuario.correo
+                    password = nuevoUsuario.clave
+                }
                 val datosJson = buildJsonObject {
                     put("nombre", nuevoUsuario.nombre)
                     put("correo", nuevoUsuario.correo)
@@ -122,11 +132,10 @@ object SupabaseHelper {
                     put("telefono", nuevoUsuario.telefono)
                     put("id_rol", 2)
                 }
-
                 client.postgrest.from("Usuarios").insert(datosJson)
                 true
             } catch (e: Exception) {
-                println("ERROR SUPABASE DETALLADO: ${e.message}")
+                android.util.Log.e("SUPABASE_REGISTRO", "ERROR DETALLADO: ${e.message}")
                 e.printStackTrace()
                 false
             }
@@ -159,14 +168,12 @@ object SupabaseHelper {
             try {
                 val client = SupabaseManager.getInstance()
 
-                val columnas = Columns.raw("*,Categorias(nombre_categoria)")
-
-                val respuesta = client.postgrest.from("Productos").select(columns = columnas) {
+                val columnasRelacionadas = Columns.raw("*, Categorias!inner(nombre_categoria), Usuarios(nombre)")
+                val respuesta = client.postgrest.from("Productos").select(columns = columnasRelacionadas) {
                     filter {
                         if (nombreBusqueda.isNotEmpty()) {
                             ilike("nombre", "%$nombreBusqueda%")
                         }
-
                         if (categoria != "Todos" && categoria.isNotEmpty()) {
                             eq("Categorias.nombre_categoria", categoria)
                         }

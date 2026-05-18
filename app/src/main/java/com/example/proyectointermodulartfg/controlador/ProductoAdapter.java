@@ -11,7 +11,6 @@ import com.bumptech.glide.Glide;
 import com.example.proyectointermodulartfg.R;
 import java.util.List;
 
-import kotlinx.serialization.json.JsonArray;
 import kotlinx.serialization.json.JsonElement;
 import kotlinx.serialization.json.JsonObject;
 
@@ -38,64 +37,51 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
 
     @Override
     public void onBindViewHolder(@NonNull ProductoViewHolder holder, int position) {
-        // Obtenemos el objeto genérico
-        Object objProducto = listaProductos.get(position);
-        String jsonCompleto = objProducto.toString();
+        JsonObject producto = listaProductos.get(position);
 
-        android.util.Log.d("JSON_PRUEBA", "Datos: " + jsonCompleto);
+        String nombre = producto.get("nombre") != null ?
+                producto.get("nombre").toString().replace("\"", "") : "Sin nombre";
 
-        // --- EXTRAER DATOS BÁSICOS (Usando lógica de Strings) ---
-        // Si el get devuelve null, usamos un valor por defecto
-        String nombre = "Sin nombre";
-        if (listaProductos.get(position).get("nombre") != null) {
-            nombre = listaProductos.get(position).get("nombre").toString().replace("\"", "");
-        }
+        String precio = producto.get("precio") != null ?
+                producto.get("precio").toString().replace("\"", "") : "0.00";
 
-        String precio = "0.00";
-        if (listaProductos.get(position).get("precio") != null) {
-            precio = listaProductos.get(position).get("precio").toString().replace("\"", "");
-        }
-
-        String urlImagen = "";
-        if (listaProductos.get(position).get("imagen") != null) {
-            urlImagen = listaProductos.get(position).get("imagen").toString().replace("\"", "");
-        }
+        String urlImagen = producto.get("imagen") != null ?
+                producto.get("imagen").toString().replace("\"", "") : "";
 
         holder.tvNombre.setText(nombre);
         holder.tvPrecio.setText(precio + " €");
 
         String catNombre = "General";
-
         try {
-            Object rawCat = listaProductos.get(position).get("Categorias");
-
-            if (rawCat != null) {
+            JsonElement rawCat = producto.get("Categorias");
+            if (rawCat != null && !rawCat.toString().equals("null")) {
                 String catString = rawCat.toString();
 
                 if (catString.contains("nombre_categoria")) {
-                    String[] partes = catString.split("nombre_categoria\":\"");
+                    String[] partes = catString.split(":");
                     if (partes.length > 1) {
-                        catNombre = partes[1].split("\"")[0];
+                        catNombre = partes[1].replace("}", "").replace("\"", "").trim();
                     }
                 }
             }
         } catch (Exception e) {
-            android.util.Log.e("ERROR_MANUAL", "No se pudo cortar el texto");
+            android.util.Log.e("SUPABASE_ADAPTER", "Error parseo categoría: " + e.getMessage());
         }
 
         holder.tvCategoria.setText(catNombre);
 
-        // Carga de imagen
         if (!urlImagen.isEmpty() && !urlImagen.equals("null")) {
-            Glide.with(holder.itemView.getContext()).load(urlImagen).into(holder.ivImagen);
+            Glide.with(holder.itemView.getContext())
+                    .load(urlImagen)
+                    .into(holder.ivImagen);
         }
 
-        holder.itemView.setOnClickListener(v -> listener.onProductoClick(listaProductos.get(position)));
+        holder.itemView.setOnClickListener(v -> listener.onProductoClick(producto));
     }
 
     @Override
     public int getItemCount() {
-        return listaProductos.size();
+        return listaProductos != null ? listaProductos.size() : 0;
     }
 
     public static class ProductoViewHolder extends RecyclerView.ViewHolder {

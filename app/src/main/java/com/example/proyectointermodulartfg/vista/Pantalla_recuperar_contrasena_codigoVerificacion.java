@@ -54,7 +54,7 @@ public class Pantalla_recuperar_contrasena_codigoVerificacion extends AppCompatA
     }
 
     private void validarCodigo() {
-        String correo = getIntent().getStringExtra("correo_recuperacion");
+        String correo = getIntent().getStringExtra("correo");
         String codigo = etCodigo.getText().toString().trim();
 
         if (correo == null || correo.isEmpty()) {
