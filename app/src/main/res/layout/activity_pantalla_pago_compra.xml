@@ -5,62 +5,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA"
-    android:fitsSystemWindows="true"> <RelativeLayout
-    android:id="@+id/toolbarPago"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp"
-    android:background="@color/white"
-    app:layout_constraintTop_toTopOf="parent">
+    android:fitsSystemWindows="true">
 
-    <ImageButton
-        android:id="@+id/btnBackPago"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerVertical="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/outline_arrow_back_ios_24"
-        app:tint="@android:color/holo_purple" />
-
-    <TextView
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/toolbarPago"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Finalizar Pedido"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black" />
-</RelativeLayout>
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBackPago"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/outline_arrow_back_ios_24"
+            app:tint="@android:color/holo_purple" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Finalizar Pedido"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+    </RelativeLayout>
 
     <ScrollView
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/toolbarPago"
-        app:layout_constraintBottom_toTopOf="@id/layoutConfirmarPago">
+        app:layout_constraintBottom_toTopOf="@id/layoutConfirmarPago"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"> <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Dirección de envío"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="12dp"/>
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dirección de envío"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp"/>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cvDireccionEnvio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/white"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -71,6 +83,7 @@
                         android:id="@+id/icLocation"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
+                        android:layout_centerVertical="true"
                         android:src="@drawable/outline_globe_location_pin_24"
                         app:tint="@android:color/holo_purple" />
 
@@ -79,21 +92,24 @@
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/icLocation"
                         android:layout_marginStart="16dp"
+                        android:layout_centerVertical="true"
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvNombreUsuarioEnvio"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ángel Paredes Serrano"
+                            android:text="Toca para añadir dirección"
                             android:textStyle="bold"
                             android:textColor="@color/black"
                             android:textSize="16sp"/>
 
                         <TextView
+                            android:id="@+id/tvDetalleDireccion"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="Calle Falsa 123, 28001 Madrid"
+                            android:text="Falta información"
                             android:textColor="#757575"
                             android:textSize="14sp"/>
                     </LinearLayout>
@@ -111,28 +127,42 @@
                 android:layout_marginBottom="12dp"/>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cvMetodoPago"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/white"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
-                <RadioGroup
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:padding="20dp">
 
-                    <RadioButton
-                        android:id="@+id/rbTarjeta"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="Tarjeta de Crédito (**** 1234)"
-                        android:checked="true"
-                        android:paddingStart="12dp"
-                        app:buttonTint="@android:color/holo_purple" />
+                    <ImageView
+                        android:id="@+id/icPago"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/outline_add_card_24"
+                        app:tint="@android:color/holo_purple" />
 
-                </RadioGroup>
+                    <TextView
+                        android:id="@+id/tvDetallePago"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/icPago"
+                        android:layout_marginStart="16dp"
+                        android:layout_centerVertical="true"
+                        android:text="Seleccionar método de pago"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"/>
+
+                </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
@@ -152,7 +182,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Productos" android:textColor="#757575" android:textSize="14sp"/>
-                        <TextView android:id="@+id/tvSubtotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="140.00 €" android:textColor="@color/black" android:textSize="14sp"/>
+                        <TextView android:id="@+id/tvSubtotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0.00 €" android:textColor="@color/black" android:textSize="14sp"/>
                     </RelativeLayout>
 
                     <RelativeLayout
@@ -160,7 +190,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Envío" android:textColor="#757575" android:textSize="14sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="5.50 €" android:textColor="@color/black" android:textSize="14sp"/>
+                        <TextView android:id="@+id/tvCostoEnvio" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="5.50 €" android:textColor="@color/black" android:textSize="14sp"/>
                     </RelativeLayout>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginVertical="16dp"/>
@@ -169,7 +199,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textStyle="bold" android:textSize="18sp" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvTotalFinal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="145.50 €" android:textStyle="bold" android:textSize="18sp" android:textColor="@android:color/holo_purple"/>
+                        <TextView android:id="@+id/tvTotalFinal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0.00 €" android:textStyle="bold" android:textSize="18sp" android:textColor="@android:color/holo_purple"/>
                     </RelativeLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -179,26 +209,29 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/layoutConfirmarPago"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:cardElevation="16dp"
         app:cardCornerRadius="24dp"
         android:layout_marginBottom="-20dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp"
             android:paddingTop="20dp"
-            android:paddingBottom="40dp"> <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFinalizarCompra"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="CONFIRMAR Y PAGAR"
-            android:textStyle="bold"
-            app:cornerRadius="16dp"
-            app:backgroundTint="@android:color/holo_purple" />
+            android:paddingBottom="40dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFinalizarCompra"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="CONFIRMAR Y PAGAR"
+                android:textStyle="bold"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@android:color/holo_purple" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

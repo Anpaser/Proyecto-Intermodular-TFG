@@ -64,6 +64,33 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:layout_marginTop="4dp">
+
+            <RatingBar
+                android:id="@+id/rbMediaValoracion"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:rating="0"
+                android:isIndicator="true"
+                android:progressTint="#FFD700" />
+
+            <TextView
+                android:id="@+id/tvNumValoraciones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="(0 valoraciones)"
+                android:textColor="#888888"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_marginTop="8dp">
 
             <TextView
@@ -158,11 +185,37 @@
             android:textSize="15sp"
             android:text="Breve descripción del producto..." />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#EEEEEE"
+            android:layout_marginTop="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="¿Qué te ha parecido este producto?"
+            android:textAlignment="center"
+            android:textStyle="italic"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <RatingBar
+            android:id="@+id/rbUsuarioValoracion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:numStars="5"
+            android:stepSize="1"
+            android:progressTint="@android:color/holo_purple" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAgregarAlCarrito"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:text="AÑADIR AL CARRITO"
             android:textStyle="bold"
             app:cornerRadius="16dp"

@@ -71,7 +71,11 @@ object SupabaseHelper {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
-                client.auth.verifyEmailOtp(type = OtpType.Email.RECOVERY, email = correo, token = codigo)
+                client.auth.verifyEmailOtp(
+                    type = OtpType.Email.RECOVERY,
+                    email = correo,
+                    token = codigo
+                )
                 client.auth.updateUser { password = nuevaClave }
                 client.postgrest.from("Usuarios")
                     .update({ set("clave", nuevaClave) }) {
@@ -168,22 +172,72 @@ object SupabaseHelper {
             try {
                 val client = SupabaseManager.getInstance()
 
-                val columnasRelacionadas = Columns.raw("*, Categorias!inner(nombre_categoria), Usuarios(nombre)")
-                val respuesta = client.postgrest.from("Productos").select(columns = columnasRelacionadas) {
-                    filter {
-                        if (nombreBusqueda.isNotEmpty()) {
-                            ilike("nombre", "%$nombreBusqueda%")
-                        }
-                        if (categoria != "Todos" && categoria.isNotEmpty()) {
-                            eq("Categorias.nombre_categoria", categoria)
+                val columnasRelacionadas =
+                    Columns.raw("*, Categorias!inner(nombre_categoria), Usuarios(nombre)")
+                val respuesta =
+                    client.postgrest.from("Productos").select(columns = columnasRelacionadas) {
+                        filter {
+                            if (nombreBusqueda.isNotEmpty()) {
+                                ilike("nombre", "%$nombreBusqueda%")
+                            }
+                            if (categoria != "Todos" && categoria.isNotEmpty()) {
+                                eq("Categorias.nombre_categoria", categoria)
+                            }
                         }
                     }
-                }
 
                 respuesta.decodeList<JsonObject>()
             } catch (e: Exception) {
                 android.util.Log.e("SUPABASE_ERROR", "Error en la query: ${e.message}")
                 emptyList()
+            }
+        }
+    }
+
+    @JvmStatic
+    fun insertarValoracion(idUsuario: Long, idProducto: Long, nota: Int): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val datosJson = buildJsonObject {
+                    put("id_usuario", idUsuario)
+                    put("id_producto", idProducto)
+                    put("valoracion", nota)
+                    put("comentario", "")
+                }
+
+                client.postgrest.from("Valoraciones").upsert(
+                    value = datosJson,
+                    onConflict = "id_usuario,id_producto"
+                )
+
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_VALORAR", "Error en upsert: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun obtenerEstadisticasValoracion(idProducto: Long): Pair<Float, Int> {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                val respuesta = client.postgrest.from("Valoraciones")
+                    .select { filter { eq("id_producto", idProducto) } }
+
+                val lista = respuesta.decodeList<JsonObject>()
+
+                if (lista.isEmpty()) return@runBlocking Pair(0f, 0)
+
+                val suma = lista.sumOf { it["valoracion"]?.toString()?.toInt() ?: 0 }
+                val media = suma.toFloat() / lista.size
+
+                Pair(media, lista.size)
+            } catch (e: Exception) {
+                Pair(0f, 0)
             }
         }
     }
@@ -195,9 +249,10 @@ object SupabaseHelper {
             try {
                 val client = SupabaseManager.getInstance()
                 val respuesta = client.postgrest.from(tabla)
-                    .select { filter {
-                        eq(columna, valorFiltro)
-                    }
+                    .select {
+                        filter {
+                            eq(columna, valorFiltro)
+                        }
                     }
                 if (respuesta.data == "[]") null else respuesta.data
             } catch (e: Exception) {
@@ -209,5 +264,106 @@ object SupabaseHelper {
     @JvmStatic
     fun estructuraCorreoValida(correo: String?): Boolean {
         return correo != null && Patterns.EMAIL_ADDRESS.matcher(correo).matches()
+    }
+
+    // CARRITO PRODUCTOS
+    @JvmStatic
+    fun agregarAlCarrito(idUsuario: Long, idProducto: Long, cantidad: Int): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val datosJson = buildJsonObject {
+                    put("id_usuario", idUsuario)
+                    put("id_producto", idProducto)
+                    put("cantidad_seleccionada", cantidad)
+                }
+
+                client.postgrest.from("Carrito").upsert(
+                    value = datosJson,
+                    onConflict = "id_usuario,id_producto"
+                )
+
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_CARRITO_ADD", e.message ?: "Error desconocido")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun obtenerCarritoConProductos(idUsuario: Long): String? {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val result = client.postgrest.from("Carrito")
+                    .select(columns = io.github.jan.supabase.postgrest.query.Columns.raw("*, Productos(*)")) {
+                        filter {
+                            eq("id_usuario", idUsuario)
+                        }
+                    }
+                result.data
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_CARRITO_GET", "Error: ${e.message}")
+                null
+            }
+        }
+    }
+
+    @JvmStatic
+    fun eliminarDelCarrito(idUsuario: Long, idProducto: Long): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                client.postgrest.from("Carrito").delete {
+                    filter {
+                        eq("id_usuario", idUsuario)
+                        eq("id_producto", idProducto)
+                    }
+                }
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_CARRITO_DEL", "Error: ${e.message}")
+                false
+            }
+        }
+    }
+
+    // DIRECCIONES USUARIOS
+    @JvmStatic
+    fun insertarDireccion(
+        idUsuario: Long,
+        calle: String,
+        numero: String,
+        letra: String,
+        cp: String,
+        ciudad: String,
+        provincia: String
+    ): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val datosJson = buildJsonObject {
+                    put("id_usuario", idUsuario)
+                    put("calle", calle)
+                    put("numero", numero)
+                    put("letra", letra)
+                    put("codigo_postal", cp)
+                    put("ciudad", ciudad)
+                    put("provincia", provincia)
+                }
+
+                client.postgrest.from("Direcciones").insert(datosJson)
+
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_DIRECCION", "Error al insertar dirección: ${e.message}")
+                e.printStackTrace()
+                false
+            }
+        }
     }
 }
