@@ -1,6 +1,8 @@
 package com.example.proyectointermodulartfg.vista;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -22,6 +24,7 @@ public class Pantalla_seleccionar_pago extends AppCompatActivity {
         setContentView(R.layout.activity_pantalla_seleccionar_pago);
 
         inicializarVistas();
+        cargarPagoGuardado(); // Cargar datos previos
 
         btnBackPago.setOnClickListener(v -> finish());
 
@@ -35,6 +38,14 @@ public class Pantalla_seleccionar_pago extends AppCompatActivity {
                 Toast.makeText(this, "Por favor, introduce datos válidos", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            // GUARDAR DATOS (Excepto el CVV por seguridad)
+            SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("pago_titular", titular);
+            editor.putString("pago_numero", numero);
+            editor.putString("pago_fecha", fecha);
+            editor.apply();
 
             String ultimos4 = numero.substring(numero.length() - 4);
             String tarjetaSeleccionada = "Tarjeta (**** " + ultimos4 + ")";
@@ -54,5 +65,14 @@ public class Pantalla_seleccionar_pago extends AppCompatActivity {
         etFechaExp = findViewById(R.id.etFechaExp);
         etCVV = findViewById(R.id.etCVV);
         btnUsarTarjeta = findViewById(R.id.btnUsarTarjeta);
+    }
+
+    private void cargarPagoGuardado() {
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+        etTitularTarjeta.setText(prefs.getString("pago_titular", ""));
+        etNumeroTarjeta.setText(prefs.getString("pago_numero", ""));
+        etFechaExp.setText(prefs.getString("pago_fecha", ""));
+        // El CVV siempre vacío por seguridad teórica en el TFG
+        etCVV.setText("");
     }
 }

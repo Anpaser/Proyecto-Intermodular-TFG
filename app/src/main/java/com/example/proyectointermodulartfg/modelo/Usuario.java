@@ -1,5 +1,8 @@
 package com.example.proyectointermodulartfg.modelo;
 
+import kotlinx.serialization.Serializable;
+
+@Serializable
 public class Usuario {
     private long id;
     private  String nombre;

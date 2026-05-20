@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="@color/white"
-    tools:context=".LoginActivity">
+    tools:context=".vista.Pantalla_login">
 
     <LinearLayout
         android:layout_width="match_parent"

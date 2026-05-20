@@ -34,13 +34,17 @@ public class Pantalla_seleccionar_direccion extends AppCompatActivity {
 
         inicializarVistas();
         recuperarIdUsuario();
+        cargarDireccionGuardada();
 
         btnBackDir.setOnClickListener(v -> finish());
 
         btnGuardarDireccion.setOnClickListener(v -> {
             if (idUsuarioActual == -1) {
-                Toast.makeText(this, "Error: No se pudo identificar al usuario", Toast.LENGTH_SHORT).show();
-                return;
+                recuperarIdUsuario();
+                if (idUsuarioActual == -1) {
+                    Toast.makeText(this, "Error: No se pudo identificar al usuario. Inicia sesión de nuevo.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
             ejecutarGuardado();
         });
@@ -62,20 +66,22 @@ public class Pantalla_seleccionar_direccion extends AppCompatActivity {
         String correoUsuario = prefs.getString("correo_usuario", null);
 
         if (correoUsuario != null) {
-            String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
+            new Thread(() -> {
+                String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
 
-            if (jsonRespuesta != null) {
-                try {
-                    JSONArray jsonArray = new JSONArray(jsonRespuesta);
-                    if (jsonArray.length() > 0) {
-                        JSONObject objetoUsuario = jsonArray.getJSONObject(0);
-                        idUsuarioActual = objetoUsuario.getLong("id");
-                        Log.d("SUPABASE_ID", "ID de usuario recuperado: " + idUsuarioActual);
+                if (jsonRespuesta != null) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(jsonRespuesta);
+                        if (jsonArray.length() > 0) {
+                            JSONObject objetoUsuario = jsonArray.getJSONObject(0);
+                            idUsuarioActual = objetoUsuario.getLong("id");
+                            Log.d("SUPABASE_ID", "ID de usuario recuperado: " + idUsuarioActual);
+                        }
+                    } catch (JSONException e) {
+                        Log.e("JSON_ERROR", "Error al parsear el usuario: " + e.getMessage());
                     }
-                } catch (JSONException e) {
-                    Log.e("JSON_ERROR", "Error al parsear el usuario: " + e.getMessage());
                 }
-            }
+            }).start();
         }
     }
 
@@ -92,22 +98,36 @@ public class Pantalla_seleccionar_direccion extends AppCompatActivity {
             return;
         }
 
-        boolean exito = SupabaseHelper.insertarDireccion(
-                idUsuarioActual,
-                calle,
-                numero,
-                letra,
-                cp,
-                ciudad,
-                provincia
-        );
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("dir_calle", calle);
+        editor.putString("dir_numero", numero);
+        editor.putString("dir_letra", letra);
+        editor.putString("dir_cp", cp);
+        editor.putString("dir_ciudad", ciudad);
+        editor.putString("dir_provincia", provincia);
+        editor.apply();
 
-        if (exito) {
-            Toast.makeText(this, "Dirección guardada correctamente", Toast.LENGTH_SHORT).show();
-            enviarResultadoAPantallaPago(calle, numero, letra, cp, ciudad, provincia);
-        } else {
-            Toast.makeText(this, "Error al guardar en la base de datos", Toast.LENGTH_SHORT).show();
-        }
+        new Thread(() -> {
+            boolean exito = SupabaseHelper.insertarDireccionBoolean(
+                    idUsuarioActual,
+                    calle,
+                    numero,
+                    letra,
+                    cp,
+                    ciudad,
+                    provincia
+            );
+
+            runOnUiThread(() -> {
+                if (exito) {
+                    Toast.makeText(this, "Dirección guardada", Toast.LENGTH_SHORT).show();
+                    enviarResultadoAPantallaPago(calle, numero, letra, cp, ciudad, provincia);
+                } else {
+                    Toast.makeText(this, "Error al guardar en la base de datos", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
     }
 
     private void enviarResultadoAPantallaPago(String calle, String numero, String letra, String cp, String ciudad, String provincia) {
@@ -118,16 +138,19 @@ public class Pantalla_seleccionar_direccion extends AppCompatActivity {
         String resumenCompleto = direccionFormateada + "\n" + cp + " " + ciudad + " (" + provincia + ")";
 
         Intent intent = new Intent();
+        intent.putExtra("NOMBRE_DIRECCION", "Envío a domicilio"); // Añadido para el TextView de la pantalla anterior
         intent.putExtra("DIRECCION_COMPLETA", resumenCompleto);
-
-        intent.putExtra("CALLE", calle);
-        intent.putExtra("NUMERO", numero);
-        intent.putExtra("LETRA", letra);
-        intent.putExtra("CP", cp);
-        intent.putExtra("CIUDAD", ciudad);
-        intent.putExtra("PROVINCIA", provincia);
-
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    private void cargarDireccionGuardada() {
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+        etCalle.setText(prefs.getString("dir_calle", ""));
+        etNumero.setText(prefs.getString("dir_numero", ""));
+        etLetra.setText(prefs.getString("dir_letra", ""));
+        etCP.setText(prefs.getString("dir_cp", ""));
+        etCiudad.setText(prefs.getString("dir_ciudad", ""));
+        etProvincia.setText(prefs.getString("dir_provincia", ""));
     }
 }

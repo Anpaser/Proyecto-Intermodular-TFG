@@ -1,7 +1,14 @@
 package com.example.proyectointermodulartfg.vista;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -11,12 +18,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.proyectointermodulartfg.R;
+import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class Pantalla_pago_compra extends AppCompatActivity {
 
-    // Vistas de la UI
     private ImageButton btnBackPago;
     private MaterialCardView cvDireccionEnvio, cvMetodoPago;
     private TextView tvNombreUsuarioEnvio, tvDetalleDireccion, tvDetallePago;
@@ -83,7 +97,6 @@ public class Pantalla_pago_compra extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         String tarjeta = result.getData().getStringExtra("TARJETA_SELECCIONADA");
-
                         tvDetallePago.setText(tarjeta);
                         pagoSeleccionado = true;
                     }
@@ -95,34 +108,151 @@ public class Pantalla_pago_compra extends AppCompatActivity {
         btnBackPago.setOnClickListener(v -> finish());
 
         cvDireccionEnvio.setOnClickListener(v -> {
-            Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_seleccionar_direccion.class);
+            Intent intent = new Intent(this, Pantalla_seleccionar_direccion.class);
             launcherDireccion.launch(intent);
         });
 
         cvMetodoPago.setOnClickListener(v -> {
-            Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_seleccionar_pago.class);
+            Intent intent = new Intent(this, Pantalla_seleccionar_pago.class);
             launcherPago.launch(intent);
         });
 
         btnFinalizarCompra.setOnClickListener(v -> {
-            if (!direccionSeleccionada) {
-                Toast.makeText(this, "Por favor, selecciona una dirección de envío.", Toast.LENGTH_SHORT).show();
+            if (!direccionSeleccionada || !pagoSeleccionado) {
+                Toast.makeText(this, "Por favor, completa los datos de envío y pago.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            if (!pagoSeleccionado) {
-                Toast.makeText(this, "Por favor, selecciona un método de pago.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Toast.makeText(this, "Procesando pedido...", Toast.LENGTH_SHORT).show();
-
-            // TODO: Aquí llamaremos a las funciones de Supabase para:
-            // 1. Guardar la dirección en BD
-            // 2. Crear el Pedido
-            // 3. Crear el Detalle_Pedido
-            // 4. Vaciar el carrito
-            // 5. Generar PDF
+            procesarCompra();
         });
+    }
+
+    private void procesarCompra() {
+        btnFinalizarCompra.setEnabled(false);
+
+        new Thread(() -> {
+            try {
+                SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
+                String correoUsuario = prefs.getString("correo_usuario", null);
+
+                if (correoUsuario == null) {
+                    throw new Exception("No hay un usuario logueado (correo no encontrado).");
+                }
+
+                String jsonUsuario = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
+
+                if (jsonUsuario == null) {
+                    throw new Exception("No se encontró el usuario en la base de datos.");
+                }
+
+                JSONArray arrayUsuario = new JSONArray(jsonUsuario);
+                long idUsuario = arrayUsuario.getJSONObject(0).getLong("id");
+
+                long idDireccion = SupabaseHelper.insertarDireccion(
+                        idUsuario,
+                        tvDetalleDireccion.getText().toString(),
+                        "S/N",
+                        "",
+                        "00000",
+                        "Ciudad",
+                        "Provincia"
+                );
+
+                if (idDireccion == -1) throw new Exception("Error al guardar la dirección");
+
+                long idPedido = SupabaseHelper.crearPedido(idUsuario, idDireccion, totalFinal);
+                if (idPedido == -1) throw new Exception("Error al crear el pedido");
+
+                String carritoJson = SupabaseHelper.obtenerCarritoConProductos(idUsuario);
+                if (carritoJson == null || carritoJson.equals("[]")) throw new Exception("El carrito está vacío");
+
+                JSONArray arrayCarrito = new JSONArray(carritoJson);
+                JSONArray detallesParaEnviar = new JSONArray();
+
+                for (int i = 0; i < arrayCarrito.length(); i++) {
+                    JSONObject item = arrayCarrito.getJSONObject(i);
+                    JSONObject producto = item.getJSONObject("Productos");
+
+                    JSONObject detalle = new JSONObject();
+                    detalle.put("id_pedido", idPedido);
+                    detalle.put("id_producto", item.getLong("id_producto"));
+                    detalle.put("cantidad", item.getInt("cantidad_seleccionada"));
+                    detalle.put("precio_unitario", producto.getDouble("precio"));
+
+                    detallesParaEnviar.put(detalle);
+                }
+
+                boolean detallesOk = SupabaseHelper.insertarDetallesDesdeJson(detallesParaEnviar.toString());
+                if (!detallesOk) throw new Exception("Error al insertar detalles del pedido");
+
+                boolean stockOk = SupabaseHelper.actualizarStockProductos(arrayCarrito);
+                if (!stockOk) {
+                    Log.w("COMPRA", "El pedido se creó, pero hubo un problema actualizando el stock.");
+                }
+
+                SupabaseHelper.vaciarCarritoCompleto(idUsuario);
+                generarFacturaPDF(idPedido, arrayCarrito);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "¡Compra realizada con éxito!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_historial_pedidos_realizados.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    btnFinalizarCompra.setEnabled(true);
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("ERROR_COMPRA", "Fallo en procesarCompra", e);
+                });
+            }
+        }).start();
+    }
+
+    private void generarFacturaPDF(long idPedido, JSONArray itemsCarrito) {
+        PdfDocument document = new PdfDocument();
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300, 600, 1).create();
+        PdfDocument.Page page = document.startPage(pageInfo);
+
+        Canvas canvas = page.getCanvas();
+        Paint paint = new Paint();
+
+        paint.setTextSize(14f);
+        paint.setFakeBoldText(true);
+        canvas.drawText("TIENDA TFG - FACTURA", 60, 40, paint);
+
+        paint.setFakeBoldText(false);
+        paint.setTextSize(10f);
+        canvas.drawText("Pedido: #CH-" + idPedido, 20, 70, paint);
+        canvas.drawText("Cliente: " + tvNombreUsuarioEnvio.getText().toString(), 20, 85, paint);
+        canvas.drawText("Dirección: " + tvDetalleDireccion.getText().toString(), 20, 100, paint);
+
+        canvas.drawText("------------------------------------------", 20, 120, paint);
+
+        int yPos = 140;
+        try {
+            for (int i = 0; i < itemsCarrito.length(); i++) {
+                JSONObject item = itemsCarrito.getJSONObject(i);
+                JSONObject prod = item.getJSONObject("Productos");
+                String linea = item.getInt("cantidad_seleccionada") + "x " + prod.getString("nombre") + " - " + prod.getDouble("precio") + "€";
+                canvas.drawText(linea, 20, yPos, paint);
+                yPos += 20;
+            }
+        } catch (Exception ignored) {}
+
+        canvas.drawText("------------------------------------------", 20, yPos + 10, paint);
+        paint.setFakeBoldText(true);
+        canvas.drawText("TOTAL: " + String.format("%.2f €", totalFinal), 20, yPos + 30, paint);
+
+        document.finishPage(page);
+
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Factura_" + idPedido + ".pdf");
+        try {
+            document.writeTo(new FileOutputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        document.close();
     }
 }

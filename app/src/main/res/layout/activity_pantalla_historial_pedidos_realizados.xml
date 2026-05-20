@@ -50,30 +50,33 @@
             android:orientation="horizontal">
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chipTodos"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Todos"
                 android:checked="true"
-                app:chipBackgroundColor="@android:color/holo_purple"
+                android:text="Todos"
                 android:textColor="@color/white"
-                app:chipCornerRadius="12dp"/>
+                app:chipBackgroundColor="@android:color/holo_purple"
+                app:chipCornerRadius="12dp" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chipEnCamino"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="En camino"
-                app:chipCornerRadius="12dp"/>
+                app:chipCornerRadius="12dp" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chipEntregados"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Entregados"
-                app:chipCornerRadius="12dp"/>
+                app:chipCornerRadius="12dp" />
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -87,6 +90,8 @@
         app:layout_constraintTop_toBottomOf="@id/scrollFiltros"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/recycler_view_item_pedido"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:spanCount="1"
+        tools:layoutManager="GridLayoutManager" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

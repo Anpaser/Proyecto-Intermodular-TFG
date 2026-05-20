@@ -1,17 +1,24 @@
 package com.example.proyectointermodulartfg.controlador
 
+import android.util.Log
 import android.util.Patterns
+import com.example.proyectointermodulartfg.modelo.Direccion
 import com.example.proyectointermodulartfg.modelo.Usuario
 import io.github.jan.supabase.gotrue.OtpType
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.Google
 import io.github.jan.supabase.gotrue.providers.builtin.IDToken
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.runBlocking
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.coroutines.selects.select
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.json.JSONArray
+import org.json.JSONObject
 
 object SupabaseHelper {
 
@@ -333,15 +340,7 @@ object SupabaseHelper {
 
     // DIRECCIONES USUARIOS
     @JvmStatic
-    fun insertarDireccion(
-        idUsuario: Long,
-        calle: String,
-        numero: String,
-        letra: String,
-        cp: String,
-        ciudad: String,
-        provincia: String
-    ): Boolean {
+    fun insertarDireccion(idUsuario: Long, calle: String, numero: String, letra: String, cp: String, ciudad: String, provincia: String): Long {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
@@ -356,13 +355,214 @@ object SupabaseHelper {
                     put("provincia", provincia)
                 }
 
-                client.postgrest.from("Direcciones").insert(datosJson)
+                val direccionExistente = client.postgrest.from("Direcciones")
+                    .select { filter { eq("id_usuario", idUsuario) } }
+                    .decodeList<JsonObject>()
 
+                if (direccionExistente.isNotEmpty()) {
+                    client.postgrest.from("Direcciones").update(datosJson) {
+                        filter { eq("id_usuario", idUsuario) }
+                    }
+                    return@runBlocking direccionExistente[0]["id"]?.toString()?.toLong() ?: -1L
+                } else {
+                    val respuesta = client.postgrest.from("Direcciones").insert(datosJson) {
+                        select()
+                    }.decodeSingle<JsonObject>()
+
+                    return@runBlocking respuesta["id"]?.toString()?.toLong() ?: -1L
+                }
+
+            } catch (e: Exception) {
+                android.util.Log.e("ERROR_DB", "Fallo al procesar dirección: ${e.message}")
+                -1L
+            }
+        }
+    }
+
+    @JvmStatic
+    fun insertarDireccionBoolean(idUsuario: Long, calle: String, numero: String, letra: String, cp: String, ciudad: String, provincia: String): Boolean {
+        val idResult = insertarDireccion(idUsuario, calle, numero, letra, cp, ciudad, provincia)
+        return idResult != -1L
+    }
+
+    // --- GESTIÓN DE COMPRAS (TFG) ---
+    @JvmStatic
+    fun crearPedido(idUsuario: Long, idDireccion: Long, precioTotal: Double): Long {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val datosJson = buildJsonObject {
+                    put("id_usuario", idUsuario)
+                    put("id_direccion", idDireccion)
+                    put("precio_total", precioTotal)
+                    put("estado_pedido", "En camino")
+                }
+
+                val response = client.postgrest.from("Pedidos").insert(datosJson) {
+                    select()
+                }
+
+                val jsonArray = org.json.JSONArray(response.data)
+                jsonArray.getJSONObject(0).getLong("id")
+
+            } catch (e: Exception) {
+                android.util.Log.e("ERROR_DB", "Fallo al crear pedido: ${e.message}")
+                -1L
+            }
+        }
+    }
+
+    @JvmStatic
+    fun insertarDetallesPedido(detalles: List<JsonObject>): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                client.postgrest.from("Detalle_Pedidos").insert(detalles)
                 true
             } catch (e: Exception) {
-                android.util.Log.e("SUPABASE_DIRECCION", "Error al insertar dirección: ${e.message}")
-                e.printStackTrace()
                 false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun vaciarCarritoCompleto(idUsuario: Long): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                client.postgrest.from("Carrito").delete {
+                    filter { eq("id_usuario", idUsuario) }
+                }
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun insertarDetallesDesdeJson(jsonArrayString: String): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                val listaDetalles = Json.decodeFromString<List<JsonObject>>(jsonArrayString)
+
+                client.postgrest.from("Detalle_Pedidos").insert(listaDetalles)
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_DETALLE", "Error: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun actualizarStockProductos(carritoItems: JSONArray): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                for (i in 0 until carritoItems.length()) {
+                    val item = carritoItems.getJSONObject(i)
+                    val idProducto = item.getLong("id_producto")
+                    val cantidadComprada = item.getInt("cantidad_seleccionada")
+
+                    val jsonProducto = obtenerDatosTablas("Productos", "id", idProducto.toString())
+
+                    if (!jsonProducto.isNullOrEmpty() && jsonProducto != "[]") {
+                        val array = JSONArray(jsonProducto)
+                        val stockActual = array.getJSONObject(0).getInt("stock")
+
+                        val nuevoStock = maxOf(0, stockActual - cantidadComprada)
+
+                        client.postgrest.from("Productos").update(
+                            { set("stock", nuevoStock) }
+                        ) {
+                            filter { eq("id", idProducto) }
+                        }
+                    }
+                }
+                true
+            } catch (e: Exception) {
+                Log.e("SupabaseHelper", "Error actualizando stock: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun insertarProducto(
+        idUsuario: Long,
+        idCategoria: Long,
+        nombre: String,
+        descripcion: String,
+        precio: Double,
+        imagenUrl: String,
+        stock: Int
+    ): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val datosJson = buildJsonObject {
+                    put("id_usuario", idUsuario)
+                    put("id_categoria", idCategoria)
+                    put("nombre", nombre)
+                    put("descripcion", descripcion)
+                    put("precio", precio)
+                    put("imagen", imagenUrl)
+                    put("stock", stock)
+                }
+
+                client.postgrest.from("Productos").insert(datosJson)
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_PRODUCTO", "Error insertando producto: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun eliminarProducto(idProducto: Long): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                client.postgrest.from("Productos").delete {
+                    filter {
+                        eq("id", idProducto)
+                    }
+                }
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_PRODUCTO_DEL", "Error al borrar: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun obtenerVentasDelVendedor(idVendedor: Long): String? {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val columnas = io.github.jan.supabase.postgrest.query.Columns.raw(
+                    "*, Productos!inner(*), Pedidos!inner(*, Usuarios(*))"
+                )
+
+                val respuesta = client.postgrest.from("Detalle_Pedidos")
+                    .select(columns = columnas) {
+                        filter {
+                            eq("Productos.id_usuario", idVendedor)
+                        }
+                    }
+
+                if (respuesta.data == "[]") null else respuesta.data
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_VENTAS", "Error al obtener ventas: ${e.message}")
+                null
             }
         }
     }

@@ -1,5 +1,8 @@
 package com.example.proyectointermodulartfg.modelo;
 
+import kotlinx.serialization.Serializable;
+
+@Serializable
 public class Producto {
     private int id;
     private int idUsuario;
