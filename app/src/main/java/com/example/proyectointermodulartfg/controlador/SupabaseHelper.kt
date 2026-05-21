@@ -12,7 +12,6 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.runBlocking
 import io.github.jan.supabase.postgrest.query.Columns
-import kotlinx.coroutines.selects.select
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -22,7 +21,6 @@ import org.json.JSONObject
 
 object SupabaseHelper {
 
-    // AUTENTICACIÓN Y SESIÓN
     @JvmStatic
     fun logearUsuario(usuario: Usuario): Boolean {
         return runBlocking {
@@ -112,7 +110,6 @@ object SupabaseHelper {
         }
     }
 
-    // GESTIÓN DE USUARIOS Y PERFIL
     @JvmStatic
     fun existeUsuario(emailBuscado: String): Boolean {
         return runBlocking {
@@ -172,7 +169,6 @@ object SupabaseHelper {
         }
     }
 
-    // GESTIÓN DE PRODUCTOS
     @JvmStatic
     fun buscarProductos(nombreBusqueda: String, categoria: String): List<JsonObject> {
         return runBlocking {
@@ -249,7 +245,6 @@ object SupabaseHelper {
         }
     }
 
-    // UTILIDADES Y CONSULTAS GENÉRICAS
     @JvmStatic
     fun obtenerDatosTablas(tabla: String, columna: String, valorFiltro: String): String? {
         return runBlocking {
@@ -273,7 +268,6 @@ object SupabaseHelper {
         return correo != null && Patterns.EMAIL_ADDRESS.matcher(correo).matches()
     }
 
-    // CARRITO PRODUCTOS
     @JvmStatic
     fun agregarAlCarrito(idUsuario: Long, idProducto: Long, cantidad: Int): Boolean {
         return runBlocking {
@@ -338,7 +332,6 @@ object SupabaseHelper {
         }
     }
 
-    // DIRECCIONES USUARIOS
     @JvmStatic
     fun insertarDireccion(idUsuario: Long, calle: String, numero: String, letra: String, cp: String, ciudad: String, provincia: String): Long {
         return runBlocking {
@@ -385,7 +378,6 @@ object SupabaseHelper {
         return idResult != -1L
     }
 
-    // --- GESTIÓN DE COMPRAS (TFG) ---
     @JvmStatic
     fun crearPedido(idUsuario: Long, idDireccion: Long, precioTotal: Double): Long {
         return runBlocking {
@@ -563,6 +555,114 @@ object SupabaseHelper {
             } catch (e: Exception) {
                 android.util.Log.e("SUPABASE_VENTAS", "Error al obtener ventas: ${e.message}")
                 null
+            }
+        }
+    }
+
+    @JvmStatic
+    fun actualizarProducto(
+        idProducto: Long,
+        idCategoria: Long,
+        nombre: String,
+        descripcion: String,
+        precio: Double,
+        imagenUrl: String,
+        stock: Int
+    ): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                val datosJson = buildJsonObject {
+                    put("id_categoria", idCategoria)
+                    put("nombre", nombre)
+                    put("descripcion", descripcion)
+                    put("precio", precio)
+                    put("imagen", imagenUrl)
+                    put("stock", stock)
+                }
+
+                client.postgrest.from("Productos").update(datosJson) {
+                    filter { eq("id", idProducto) }
+                }
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_UPDATE", "Error: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun obtenerTodaLaTabla(nombreTabla: String): String? {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val respuesta = client.postgrest.from(nombreTabla).select()
+
+                if (respuesta.data == "[]") null else respuesta.data
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_ADMIN", "Error al cargar tabla $nombreTabla: ${e.message}")
+                null
+            }
+        }
+    }
+
+    @JvmStatic
+    fun eliminarFilaGenerica(nombreTabla: String, id: Long): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                client.postgrest.from(nombreTabla).delete {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_ADMIN", "Error al borrar registro $id de $nombreTabla: ${e.message}")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun actualizarFilaGenerica(nombreTabla: String, id: Long, datosJsonString: String): Boolean {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                val datosUpdate = Json.decodeFromString<JsonObject>(datosJsonString)
+
+                client.postgrest.from(nombreTabla).update(datosUpdate) {
+                    filter { eq("id", id) }
+                }
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_UPDATE", e.message ?: "Error")
+                false
+            }
+        }
+    }
+
+    @JvmStatic
+    fun obtenerRolUsuario(correo: String): Int {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+                val respuesta = client.postgrest.from("Usuarios")
+                    .select { filter { eq("correo", correo) } }
+
+                val lista = respuesta.decodeList<JsonObject>()
+
+                if (lista.isNotEmpty()) {
+                    lista[0]["id_rol"]?.toString()?.toInt() ?: 2
+                } else {
+                    2
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_ROL", "Error al obtener rol: ${e.message}")
+                2
             }
         }
     }

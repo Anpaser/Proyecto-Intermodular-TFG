@@ -17,6 +17,12 @@
         android:theme="@style/Theme.ProyectoIntermodularTFG"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".vista.Pantalla_panel_administrador_contenido_tabla"
+            android:exported="false" />
+        <activity
+            android:name=".vista.Pantalla_panel_administrador"
+            android:exported="false" />
+        <activity
             android:name=".vista.Pantalla_crear_producto"
             android:exported="false" />
         <activity

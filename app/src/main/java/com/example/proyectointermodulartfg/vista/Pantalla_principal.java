@@ -187,11 +187,12 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
     }
 
     private void cargarProductos(String busqueda, String categoria) {
+        listaProductos.clear();
+        adapter.notifyDataSetChanged();
         new Thread(() -> {
             List<JsonObject> productosTienda = SupabaseHelper.buscarProductos(busqueda, categoria);
             runOnUiThread(() -> {
                 if (productosTienda != null) {
-                    listaProductos.clear();
                     listaProductos.addAll(productosTienda);
                     adapter.notifyDataSetChanged();
                 }

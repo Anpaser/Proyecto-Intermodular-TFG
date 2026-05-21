@@ -123,6 +123,10 @@ public class Pantalla_pago_compra extends AppCompatActivity {
                 return;
             }
             procesarCompra();
+            Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_principal.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
         });
     }
 

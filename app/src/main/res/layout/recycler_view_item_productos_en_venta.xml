@@ -73,6 +73,14 @@
                 android:src="@android:drawable/ic_delete"
                 app:tint="#FF5252" />
 
+            <ImageButton
+                android:id="@+id/btnVentaEditar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginTop="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/outline_edit_24"
+                app:tint="#757575" />
         </LinearLayout>
 
     </LinearLayout>

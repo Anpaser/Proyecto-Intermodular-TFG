@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 
@@ -77,9 +78,7 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
                             }
 
                             tvTotalIngresosNum.setText(String.format("%.2f €", totalIngresos));
-
-                            VentasRealizadasAdapter adapter = new VentasRealizadasAdapter(lista);
-                            rvHistorialVentas.setAdapter(adapter);
+                            rvHistorialVentas.setAdapter(new VentasRealizadasAdapter(lista));
 
                         } catch (Exception e) {
                             Log.e("VENTAS", "Error parseando JSON", e);
@@ -113,20 +112,33 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
             try {
                 JSONObject item = ventas.get(position);
 
-                // Mapeo seguro comprobando tu estructura JSON
-                holder.tvFecha.setText(item.optString("fecha_venta", "Fecha desconocida"));
 
                 JSONObject producto = item.optJSONObject("Productos");
                 if (producto != null) {
-                    holder.tvNombre.setText(producto.optString("nombre", "Producto sin nombre"));
+                    holder.tvNombre.setText(producto.optString("nombre", "Producto"));
+
+                    String urlImagen = producto.optString("imagen", "");
+                    Glide.with(holder.itemView.getContext())
+                            .load(urlImagen)
+                            .placeholder(android.R.drawable.ic_menu_report_image)
+                            .error(android.R.drawable.ic_menu_close_clear_cancel)
+                            .into(holder.ivImagen);
                 }
 
-                // Asumiendo que el JOIN devuelve los datos del comprador
-                JSONObject comprador = item.optJSONObject("Usuarios");
-                if (comprador != null) {
-                    holder.tvComprador.setText("Comprador: " + comprador.optString("nombre", "Cliente"));
+                JSONObject pedido = item.optJSONObject("Pedidos");
+                if (pedido != null) {
+                    JSONObject comprador = pedido.optJSONObject("Usuarios");
+                    if (comprador != null) {
+                        String nombreComprador = comprador.optString("nombre", "Cliente");
+                        holder.tvComprador.setText("Comprador: " + nombreComprador);
+                    } else {
+                        holder.tvComprador.setText("Comprador: Desconocido");
+                    }
+                } else {
+                    holder.tvComprador.setText("Comprador: Desconocido");
                 }
 
+                // 4. Cantidad y Precio
                 int cantidad = item.optInt("cantidad", 1);
                 holder.tvCantidad.setText("Unidades: " + cantidad);
 
@@ -134,26 +146,23 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
                 holder.tvPrecio.setText(String.format("+%.2f €", totalLinea));
 
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("ADAPTER", "Error vinculando vista", e);
             }
         }
 
         @Override
-        public int getItemCount() {
-            return ventas.size();
-        }
+        public int getItemCount() { return ventas.size(); }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvFecha, tvEstado, tvNombre, tvComprador, tvCantidad, tvPrecio;
+            TextView tvEstado, tvNombre, tvComprador, tvCantidad, tvPrecio;
             ImageView ivImagen;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                tvFecha = itemView.findViewById(R.id.tvVentaFecha);
                 tvEstado = itemView.findViewById(R.id.tvVentaEstadoCobro);
                 tvNombre = itemView.findViewById(R.id.tvVentaProductoNombre);
                 tvComprador = itemView.findViewById(R.id.tvVentaComprador);
-                tvCantidad = itemView.findViewById(R.id.tvVentaCantidad); // El que añadimos
+                tvCantidad = itemView.findViewById(R.id.tvVentaCantidad);
                 tvPrecio = itemView.findViewById(R.id.tvVentaPrecio);
                 ivImagen = itemView.findViewById(R.id.ivVentaProductoImagen);
             }

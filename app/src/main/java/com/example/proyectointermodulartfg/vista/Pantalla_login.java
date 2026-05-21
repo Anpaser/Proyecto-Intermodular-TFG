@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -67,39 +66,19 @@ public class Pantalla_login extends AppCompatActivity {
                 }
         );
 
-        tvRecuperarClave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recuperarClave();
-            }
-        });
+        tvRecuperarClave.setOnClickListener(v -> recuperarClave());
+        tvRegistrarse.setOnClickListener(v -> registrarse());
 
-        tvRegistrarse.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registrarse();
-            }
-        });
+        btnLogin.setOnClickListener(v -> new Thread(() -> {
+            String correo = etCorreo.getText().toString().trim();
+            boolean validador = SupabaseHelper.estructuraCorreoValida(correo);
+            runOnUiThread(() -> {
+                if (validador) login();
+                else Toast.makeText(Pantalla_login.this, "El correo tiene un formato inválido", Toast.LENGTH_SHORT).show();
+            });
+        }).start());
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Thread(() -> {
-                    String correo = etCorreo.getText().toString().trim();
-                    boolean validador = SupabaseHelper.estructuraCorreoValida(correo);
-                    runOnUiThread(() -> {
-                        if (validador) login(); else Toast.makeText(Pantalla_login.this, "El correo tiene un formato invalido", Toast.LENGTH_SHORT).show();
-                    });
-                }).start();
-            }
-        });
-
-        btnGoogleLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                lanzarLoginGoogle();
-            }
-        });
+        btnGoogleLogin.setOnClickListener(v -> lanzarLoginGoogle());
     }
 
     private void lanzarLoginGoogle() {
@@ -125,13 +104,21 @@ public class Pantalla_login extends AppCompatActivity {
                         nuevo.setCorreo(correo);
                         nuevo.setNombre(nombreGoogle != null ? nombreGoogle : "Usuario de Google");
                         nuevo.setClave("OAUTH_USER");
-
                         SupabaseHelper.registrarUsuario(nuevo);
                     }
 
+                    int rol = SupabaseHelper.obtenerRolUsuario(correo);
+
                     runOnUiThread(() -> {
-                        confirmacionLoginRealizado(correo);
-                        Intent intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
+                        confirmacionLoginRealizado(correo, rol);
+
+                        Intent intent;
+                        if (rol == 1) {
+                            intent = new Intent(Pantalla_login.this, Pantalla_panel_administrador.class);
+                        } else {
+                            intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
+                        }
+
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
@@ -147,22 +134,6 @@ public class Pantalla_login extends AppCompatActivity {
         }
     }
 
-    private void recuperarClave() {
-        String correo = etCorreo.getText().toString().trim();
-        Intent intent = new Intent(Pantalla_login.this, Pantalla_recuperar_contrasena.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("correo", correo);
-        startActivity(intent);
-    }
-
-    private void registrarse() {
-        String correo = etCorreo.getText().toString().trim();
-        Intent intent = new Intent(Pantalla_login.this, Pantalla_registrarse.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("correo", correo);
-        startActivity(intent);
-    }
-
     private void login() {
         String correo = etCorreo.getText().toString().trim();
         String clave = etClave.getText().toString().trim();
@@ -170,29 +141,51 @@ public class Pantalla_login extends AppCompatActivity {
         if(correo.isEmpty() || clave.isEmpty()) {
             Toast.makeText(this, "Debes rellenar todos los campos", Toast.LENGTH_SHORT).show();
             return;
-        } else {
-            new Thread(() -> {
-                Usuario usuario = new Usuario(correo, clave);
-                boolean existe = SupabaseHelper.logearUsuario(usuario);
-                runOnUiThread(() -> {
-                    if (existe) {
-                        confirmacionLoginRealizado(correo);
-                        Intent intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(this, "El usuario o contraseña son incorrectos", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }).start();
         }
+
+        new Thread(() -> {
+            Usuario usuario = new Usuario(correo, clave);
+            boolean existe = SupabaseHelper.logearUsuario(usuario);
+
+            if (existe) {
+                int rol = SupabaseHelper.obtenerRolUsuario(correo);
+                runOnUiThread(() -> {
+                    confirmacionLoginRealizado(correo, rol);
+                    Intent intent;
+                    if (rol == 1) {
+                        intent = new Intent(Pantalla_login.this, Pantalla_panel_administrador.class);
+                    } else {
+                        intent = new Intent(Pantalla_login.this, Pantalla_principal.class);
+                    }
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                });
+            } else {
+                runOnUiThread(() -> Toast.makeText(this, "El usuario o contraseña son incorrectos", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
-    private void confirmacionLoginRealizado(String correo) {
+    private void recuperarClave() {
+        String correo = etCorreo.getText().toString().trim();
+        Intent intent = new Intent(this, Pantalla_recuperar_contrasena.class);
+        intent.putExtra("correo", correo);
+        startActivity(intent);
+    }
+
+    private void registrarse() {
+        String correo = etCorreo.getText().toString().trim();
+        Intent intent = new Intent(this, Pantalla_registrarse.class);
+        intent.putExtra("correo", correo);
+        startActivity(intent);
+    }
+
+    private void confirmacionLoginRealizado(String correo, int rol) {
         SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("correo_usuario", correo);
+        editor.putInt("rol_usuario", rol);
         editor.apply();
     }
 }

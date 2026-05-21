@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
@@ -116,7 +117,6 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
     private void eliminarProductoDeLaBaseDeDatos(long idProducto) {
         new Thread(() -> {
             boolean exito = SupabaseHelper.eliminarProducto(idProducto);
-
             runOnUiThread(() -> {
                 if (exito) {
                     Toast.makeText(this, "Producto eliminado correctamente", Toast.LENGTH_SHORT).show();
@@ -149,6 +149,13 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
                 holder.tvNombre.setText(item.getString("nombre"));
                 holder.tvPrecio.setText(String.format("%.2f €", item.getDouble("precio")));
 
+                String urlImagen = item.optString("imagen", "");
+                Glide.with(holder.itemView.getContext())
+                        .load(urlImagen)
+                        .placeholder(android.R.drawable.ic_menu_report_image)
+                        .error(android.R.drawable.ic_menu_close_clear_cancel)
+                        .into(holder.ivImagen);
+
                 holder.btnEliminar.setOnClickListener(v -> {
                     try {
                         long idProducto = item.getLong("id");
@@ -156,6 +163,13 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                });
+
+                holder.btnEditar.setOnClickListener(v -> {
+                    Intent intent = new Intent(Pantalla_productos_en_venta.this, Pantalla_crear_producto.class);
+                    intent.putExtra("modo_edicion", true);
+                    intent.putExtra("datos_producto", item.toString());
+                    startActivity(intent);
                 });
 
             } catch (Exception e) {
@@ -170,7 +184,7 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvNombre, tvPrecio;
-            ImageButton btnEliminar;
+            ImageButton btnEliminar, btnEditar;
             ImageView ivImagen;
 
             public ViewHolder(@NonNull View itemView) {
@@ -178,6 +192,7 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
                 tvNombre = itemView.findViewById(R.id.tvVentaNombre);
                 tvPrecio = itemView.findViewById(R.id.tvVentaPrecio);
                 btnEliminar = itemView.findViewById(R.id.btnVentaEliminar);
+                btnEditar = itemView.findViewById(R.id.btnVentaEditar);
                 ivImagen = itemView.findViewById(R.id.ivVentaImagen);
             }
         }

@@ -57,7 +57,6 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
             @Override
             public void onDelete(ProductoCarrito item) {
                 eliminarProductoDeBD(item);
-                rvCarrito.post(() -> actualizarTotal());
             }
         });
         rvCarrito.setAdapter(adapter);
@@ -180,9 +179,15 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
     private void eliminarProductoDeBD(ProductoCarrito item) {
         new Thread(() -> {
             boolean ok = SupabaseHelper.eliminarDelCarrito(item.getId_usuario(), item.getId_producto());
-            if (!ok) {
-                runOnUiThread(() -> Toast.makeText(this, "Error al eliminar de la base de datos", Toast.LENGTH_SHORT).show());
-            }
+            runOnUiThread(() -> {
+                if (ok) {
+                    listaCarrito.remove(item);
+                    adapter.notifyDataSetChanged();
+                    actualizarTotal();
+                } else {
+                    Toast.makeText(this, "Error al eliminar de la base de datos", Toast.LENGTH_SHORT).show();
+                }
+            });
         }).start();
     }
 }
