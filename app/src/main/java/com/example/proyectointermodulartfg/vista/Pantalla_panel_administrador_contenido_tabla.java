@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.proyectointermodulartfg.R;
@@ -23,6 +24,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActivity {
 
@@ -32,6 +35,7 @@ public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActiv
     private String nombreTabla;
     private ContenidoAdapter adapter;
     private List<JSONObject> listaDatos = new ArrayList<>();
+    private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +51,7 @@ public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActiv
             tvTitulo.setText(nombreTabla.toUpperCase());
         }
 
-        rvContenido.setLayoutManager(new GridLayoutManager(this, 1));
+        rvContenido.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ContenidoAdapter(listaDatos);
         rvContenido.setAdapter(adapter);
 
@@ -62,7 +66,7 @@ public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActiv
     }
 
     private void cargarDatosDeTabla() {
-        new Thread(() -> {
+        executorService.execute(() -> {
             try {
                 String jsonRespuesta = SupabaseHelper.obtenerTodaLaTabla(nombreTabla);
 
@@ -79,13 +83,15 @@ public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActiv
                 e.printStackTrace();
                 runOnUiThread(() -> Toast.makeText(this, "Error al cargar datos", Toast.LENGTH_SHORT).show());
             }
-        }).start();
+        });
     }
 
     private class ContenidoAdapter extends RecyclerView.Adapter<ContenidoAdapter.ViewHolder> {
-        private List<JSONObject> datos;
+        private final List<JSONObject> datos;
 
-        public ContenidoAdapter(List<JSONObject> datos) { this.datos = datos; }
+        public ContenidoAdapter(List<JSONObject> datos) {
+            this.datos = datos;
+        }
 
         @NonNull
         @Override
@@ -119,7 +125,9 @@ public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActiv
         }
 
         @Override
-        public int getItemCount() { return datos.size(); }
+        public int getItemCount() {
+            return datos.size();
+        }
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvId, tvJson;
@@ -135,17 +143,24 @@ public class Pantalla_panel_administrador_contenido_tabla extends AppCompatActiv
     }
 
     private void eliminarRegistro(long id, int position) {
-        new Thread(() -> {
+        executorService.execute(() -> {
             boolean exito = SupabaseHelper.eliminarFilaGenerica(nombreTabla, id);
-            runOnUiThread(() -> {
-                if (exito) {
+
+            if (exito) {
+                runOnUiThread(() -> {
                     listaDatos.remove(position);
                     adapter.notifyDataSetChanged();
                     Toast.makeText(this, "Eliminado correctamente", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Error al eliminar", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).start();
+                });
+            } else {
+                runOnUiThread(() -> Toast.makeText(this, "Error al eliminar", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

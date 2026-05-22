@@ -27,6 +27,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_detalle_pedido extends AppCompatActivity {
 
@@ -36,6 +38,7 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     private long idPedidoRecibido;
     private double precioTotalRecibido;
     private MaterialButton btnDescargarFactura;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,9 +59,16 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
             finish();
         }
 
-        btnDescargarFactura.setOnClickListener(v -> {descargarFacturaPdf();});
+        btnDescargarFactura.setOnClickListener(v -> {
+            descargarFacturaPdf();
+        });
 
-        btnBackDetalle.setOnClickListener(v -> finish());
+        btnBackDetalle.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_detalle_pedido.this, Pantalla_historial_pedidos_realizados.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void vincularVistas() {
@@ -84,27 +94,25 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     }
 
     private void cargarProductosDelServidor() {
-        new Thread(() -> {
+        executorService.execute(() -> {
             String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Detalle_Pedidos", "id_pedido", String.valueOf(idPedidoRecibido));
 
-            runOnUiThread(() -> {
-                if (jsonRespuesta != null) {
-                    try {
-                        JSONArray datosArray = new JSONArray(jsonRespuesta);
-                        List<JSONObject> listaProds = new ArrayList<>();
-                        for (int i = 0; i < datosArray.length(); i++) {
-                            listaProds.add(datosArray.getJSONObject(i));
-                        }
-
+            if (jsonRespuesta != null) {
+                try {
+                    JSONArray datosArray = new JSONArray(jsonRespuesta);
+                    List<JSONObject> listaProds = new ArrayList<>();
+                    for (int i = 0; i < datosArray.length(); i++) {
+                        listaProds.add(datosArray.getJSONObject(i));
+                    }
+                    runOnUiThread(() -> {
                         DetalleProductosAdapter adapter = new DetalleProductosAdapter(listaProds);
                         rvProductosPedido.setAdapter(adapter);
-
-                    } catch (JSONException e) {
-                        Log.e("ERROR_DETALLE", "Error JSON: " + e.getMessage());
-                    }
+                    });
+                } catch (JSONException e) {
+                    Log.e("ERROR_DETALLE", "Error JSON: " + e.getMessage());
                 }
-            });
-        }).start();
+            }
+        });
     }
 
     private void descargarFacturaPdf() {
@@ -122,7 +130,7 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     }
 
     private class DetalleProductosAdapter extends RecyclerView.Adapter<DetalleProductosAdapter.ViewHolder> {
-        private List<JSONObject> productos;
+        private final List<JSONObject> productos;
 
         public DetalleProductosAdapter(List<JSONObject> productos) {
             this.productos = productos;
@@ -137,23 +145,16 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            try {
-                JSONObject item = productos.get(position);
+            JSONObject item = productos.get(position);
 
-                int cantidad = item.getInt("cantidad");
-                double precioUnit = item.getDouble("precio_unitario");
+            int cantidad = item.optInt("cantidad", 0);
+            double precioUnit = item.optDouble("precio_unitario", 0.0);
 
-                String nombre = item.has("nombre_producto") ?
-                        item.getString("nombre_producto") :
-                        "Producto ID: " + item.getLong("id_producto");
+            String nombre = item.optString("nombre_producto", "Producto ID: " + item.optLong("id_producto"));
 
-                holder.tvNombre.setText(nombre);
-                holder.tvCantidad.setText("x" + cantidad);
-                holder.tvPrecio.setText(String.format("%.2f €", precioUnit));
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            holder.tvNombre.setText(nombre);
+            holder.tvCantidad.setText("x" + cantidad);
+            holder.tvPrecio.setText(String.format("%.2f €", precioUnit));
         }
 
         @Override
@@ -163,6 +164,7 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvNombre, tvCantidad, tvPrecio;
+
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 tvNombre = itemView.findViewById(R.id.tvDetalleNombre);
@@ -170,5 +172,11 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
                 tvPrecio = itemView.findViewById(R.id.tvDetallePrecio);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

@@ -18,10 +18,14 @@ import com.google.android.material.button.MaterialButton;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_perfil extends AppCompatActivity {
     private MaterialButton btnHistorialPedidos, btnHistorialVentas, btnDatosUsuario, btnModificarDatos, btnCerrarSesion;
     private TextView tvNombreUsuario, tvCorreoUsuario;
     private ImageButton ibAtras;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,47 +42,31 @@ public class Pantalla_perfil extends AppCompatActivity {
         tvCorreoUsuario = findViewById(R.id.tvEmailPerfil);
         ibAtras = findViewById(R.id.btnBackPerfil);
 
-        btnHistorialPedidos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moverAOtraPantalla(Pantalla_historial_pedidos_realizados.class);
-            }
+        btnHistorialPedidos.setOnClickListener(v -> moverAOtraPantalla(Pantalla_historial_pedidos_realizados.class));
+
+        btnHistorialVentas.setOnClickListener(v -> moverAOtraPantalla(Pantalla_historial_ventas_realizadas.class));
+
+        btnDatosUsuario.setOnClickListener(v -> moverAOtraPantalla(Pantalla_datos_personales_usuario.class));
+
+        btnModificarDatos.setOnClickListener(v -> moverAOtraPantalla(Pantalla_modificar_datos_usuario.class));
+
+        btnCerrarSesion.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.clear();
+            editor.apply();
+
+            Intent intent = new Intent(Pantalla_perfil.this, Pantalla_login.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
 
-        btnHistorialVentas.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moverAOtraPantalla(Pantalla_historial_ventas_realizadas.class);
-            }
-        });
-
-        btnDatosUsuario.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moverAOtraPantalla(Pantalla_datos_personales_usuario.class);
-            }
-        });
-
-        btnModificarDatos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moverAOtraPantalla(Pantalla_modificar_datos_usuario.class);
-            }
-        });
-
-        btnCerrarSesion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moverAOtraPantalla(Pantalla_login.class);
-                finish();
-            }
-        });
-
-        ibAtras.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moverAOtraPantalla(Pantalla_principal.class);
-            }
+        ibAtras.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_perfil.this, Pantalla_principal.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
         });
 
         obtenerDatos();
@@ -94,23 +82,29 @@ public class Pantalla_perfil extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
         String correo = prefs.getString("correo_usuario", "");
 
-        new Thread(() -> {
+        executorService.execute(() -> {
            String resultadoConsulta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
-           runOnUiThread(() -> {
+
               if (resultadoConsulta != null) {
                   try {
                       JSONArray array = new JSONArray(resultadoConsulta);
                       JSONObject object = array.getJSONObject(0);
 
                       String nombre = object.getString("nombre");
-
-                      tvCorreoUsuario.setText(correo);
-                      tvNombreUsuario.setText(nombre);
+                      runOnUiThread(() -> {
+                          tvCorreoUsuario.setText(correo);
+                          tvNombreUsuario.setText(nombre);
+                      });
                   } catch (Exception e) {
-                      Toast.makeText(this, "Datos de usuario no encontrados", Toast.LENGTH_SHORT).show();
+                      runOnUiThread(() -> Toast.makeText(this, "Datos de usuario no encontrados", Toast.LENGTH_SHORT).show());
                   }
               }
-           });
-        }).start();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

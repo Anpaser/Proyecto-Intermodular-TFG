@@ -17,10 +17,14 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_recuperar_contrasena_nuevaContrasena extends AppCompatActivity {
     private EditText etContrasena, etRepContrasena;
     private Button btnModificar;
     private TextView tvVolverLogin;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,7 @@ public class Pantalla_recuperar_contrasena_nuevaContrasena extends AppCompatActi
         Intent intent = new Intent(Pantalla_recuperar_contrasena_nuevaContrasena.this, Pantalla_login.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     private void modificarContrasena() {
@@ -70,7 +75,7 @@ public class Pantalla_recuperar_contrasena_nuevaContrasena extends AppCompatActi
             return;
         }
 
-        new Thread(() -> {
+        executorService.execute(() -> {
             boolean modificacionExitosa = SupabaseHelper.verificarCodigoResetearClave(correo, codigo, nuevaContrasena);
             runOnUiThread(() -> {
                 if (modificacionExitosa) {
@@ -80,6 +85,12 @@ public class Pantalla_recuperar_contrasena_nuevaContrasena extends AppCompatActi
                     Toast.makeText(this, "Error al modificar al contraseña", Toast.LENGTH_SHORT).show();
                 }
             });
-        }).start();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

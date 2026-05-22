@@ -28,16 +28,18 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
 
     private ImageButton btnBackHistorial;
     private RecyclerView rvHistorial;
     private Chip chipTodos, chipEnCamino, chipEntregados;
-
     private List<JSONObject> listaCompletaPedidos = new ArrayList<>();
     private HistorialAdapter adapter;
     private long idUsuarioActual = -1;
+    private ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +49,13 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
         inicializarVistas();
         recuperarIdUsuario();
 
-        if (btnBackHistorial != null) {
-            btnBackHistorial.setOnClickListener(v -> finish());
-        }
+        btnBackHistorial.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_historial_pedidos_realizados.this, Pantalla_perfil.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
+
 
         configurarFiltros();
     }
@@ -68,42 +74,24 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
         } else {
             Log.e("HISTORIAL_APP", "El RecyclerView es null. Revisa el layout.");
         }
+
+
     }
 
     private void recuperarIdUsuario() {
         SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
-        String correoUsuario = prefs.getString("correo_usuario", null);
+        idUsuarioActual = prefs.getLong("id_usuario", -1);
 
-        if (correoUsuario != null) {
-            new Thread(() -> {
-                String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
-                Log.d("HISTORIAL_APP", "Datos de usuario obtenidos: " + jsonRespuesta);
-
-                if (jsonRespuesta != null && !jsonRespuesta.equals("[]")) {
-                    try {
-                        JSONArray array = new JSONArray(jsonRespuesta);
-                        if (array.length() > 0) {
-                            idUsuarioActual = array.getJSONObject(0).optLong("id", -1);
-                            if (idUsuarioActual != -1) {
-                                cargarPedidosDesdeBD();
-                            }
-                        }
-                    } catch (JSONException e) {
-                        Log.e("HISTORIAL_APP", "Error parseando usuario", e);
-                    }
-                }
-            }).start();
-        } else {
-            Log.e("HISTORIAL_APP", "No hay correo de usuario en SharedPreferences");
+        if (idUsuarioActual != -1) {
+            cargarPedidosDesdeBD();
         }
     }
 
     private void cargarPedidosDesdeBD() {
-        new Thread(() -> {
+        executorService.execute(() -> {
             String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Pedidos", "id_usuario", String.valueOf(idUsuarioActual));
             Log.d("HISTORIAL_APP", "Pedidos obtenidos de la BD: " + jsonRespuesta);
 
-            runOnUiThread(() -> {
                 if (jsonRespuesta != null && !jsonRespuesta.isEmpty()) {
                     try {
                         JSONArray arrayPedidos = new JSONArray(jsonRespuesta);
@@ -111,20 +99,21 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
                         for (int i = 0; i < arrayPedidos.length(); i++) {
                             listaCompletaPedidos.add(arrayPedidos.getJSONObject(i));
                         }
-                        Log.d("HISTORIAL_APP", "Se han parseado " + listaCompletaPedidos.size() + " pedidos.");
-                        filtrarPedidos("Todos");
+                        runOnUiThread(() -> {
+                            filtrarPedidos("Todos");
+                        });
                     } catch (JSONException e) {
                         Log.e("HISTORIAL_APP", "Error parseando pedidos", e);
                     }
                 }
-            });
-        }).start();
+        });
     }
 
     private void configurarFiltros() {
         if (chipTodos != null) chipTodos.setOnClickListener(v -> filtrarPedidos("Todos"));
         if (chipEnCamino != null) chipEnCamino.setOnClickListener(v -> filtrarPedidos("En camino"));
-        if (chipEntregados != null) chipEntregados.setOnClickListener(v -> filtrarPedidos("Entregados"));
+        if (chipEntregados != null)
+            chipEntregados.setOnClickListener(v -> filtrarPedidos("Entregados"));
     }
 
     private void filtrarPedidos(String filtro) {
@@ -138,10 +127,8 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
             listaFiltrada.addAll(listaCompletaPedidos);
         } else {
             for (JSONObject pedido : listaCompletaPedidos) {
-                // optString evita que falle si la columna 'estado_pedido' es nula
                 String estado = pedido.optString("estado_pedido", "").toLowerCase();
 
-                // Usamos contains para que un filtro "Entregados" coincida con "Entregado"
                 if (estado.contains(filtro.toLowerCase().replace("s", ""))) {
                     listaFiltrada.add(pedido);
                 }
@@ -225,5 +212,11 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
                 btnVerDetalles = itemView.findViewById(R.id.btnVerDetalles);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

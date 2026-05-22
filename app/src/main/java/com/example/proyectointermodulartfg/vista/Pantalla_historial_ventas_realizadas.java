@@ -1,6 +1,7 @@
 package com.example.proyectointermodulartfg.vista;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,25 +26,33 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
 
     private ImageButton btnBackHistorialVentas;
     private TextView tvTotalIngresosNum;
     private RecyclerView rvHistorialVentas;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pantalla_historial_ventas_realizadas);
 
-        vincularVistas();
+        cargarVistas();
         cargarHistorialVentas();
 
-        btnBackHistorialVentas.setOnClickListener(v -> finish());
+        btnBackHistorialVentas.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_historial_ventas_realizadas.this, Pantalla_perfil.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
     }
 
-    private void vincularVistas() {
+    private void cargarVistas() {
         btnBackHistorialVentas = findViewById(R.id.btnBackHistorialVentas);
         tvTotalIngresosNum = findViewById(R.id.tvTotalIngresosNum);
         rvHistorialVentas = findViewById(R.id.rvHistorialVentas);
@@ -51,50 +60,47 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
     }
 
     private void cargarHistorialVentas() {
-        new Thread(() -> {
+        executorService.execute(() -> {
             try {
                 SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
-                String correoUsuario = prefs.getString("correo_usuario", null);
-
-                String jsonUsuario = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
-                long idUsuario = new JSONArray(jsonUsuario).getJSONObject(0).getLong("id");
-
+                long idUsuario = prefs.getLong("id_usuario", -1);
                 String jsonVentas = SupabaseHelper.obtenerVentasDelVendedor(idUsuario);
 
-                runOnUiThread(() -> {
-                    if (jsonVentas != null && !jsonVentas.equals("[]")) {
-                        try {
-                            JSONArray array = new JSONArray(jsonVentas);
-                            List<JSONObject> lista = new ArrayList<>();
-                            double totalIngresos = 0.0;
+                if (jsonVentas != null && !jsonVentas.equals("[]")) {
+                    try {
+                        JSONArray array = new JSONArray(jsonVentas);
+                        List<JSONObject> lista = new ArrayList<>();
+                        double acumulado = 0.0;
 
-                            for (int i = 0; i < array.length(); i++) {
-                                JSONObject venta = array.getJSONObject(i);
-                                lista.add(venta);
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject venta = array.getJSONObject(i);
+                            lista.add(venta);
 
-                                int cant = venta.getInt("cantidad");
-                                double precioUnit = venta.getDouble("precio_unitario");
-                                totalIngresos += (cant * precioUnit);
-                            }
-
-                            tvTotalIngresosNum.setText(String.format("%.2f €", totalIngresos));
-                            rvHistorialVentas.setAdapter(new VentasRealizadasAdapter(lista));
-
-                        } catch (Exception e) {
-                            Log.e("VENTAS", "Error parseando JSON", e);
+                            int cant = venta.getInt("cantidad");
+                            double precioUnit = venta.getDouble("precio_unitario");
+                            acumulado += (cant * precioUnit);
                         }
-                    } else {
-                        tvTotalIngresosNum.setText("0.00 €");
+
+                        final double totalFinal = acumulado;
+                        runOnUiThread(() -> {
+                            tvTotalIngresosNum.setText(String.format("%.2f €", totalFinal));
+                            rvHistorialVentas.setAdapter(new VentasRealizadasAdapter(lista));
+                        });
+
+                    } catch (Exception e) {
+                        Log.e("VENTAS", "Error parseando JSON", e);
                     }
-                });
+                } else {
+                    runOnUiThread(() -> tvTotalIngresosNum.setText("0.00 €"));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     private class VentasRealizadasAdapter extends RecyclerView.Adapter<VentasRealizadasAdapter.ViewHolder> {
-        private List<JSONObject> ventas;
+        private final List<JSONObject> ventas;
 
         public VentasRealizadasAdapter(List<JSONObject> ventas) {
             this.ventas = ventas;
@@ -138,7 +144,6 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
                     holder.tvComprador.setText("Comprador: Desconocido");
                 }
 
-                // 4. Cantidad y Precio
                 int cantidad = item.optInt("cantidad", 1);
                 holder.tvCantidad.setText("Unidades: " + cantidad);
 
@@ -151,7 +156,9 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() { return ventas.size(); }
+        public int getItemCount() {
+            return ventas.size();
+        }
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvEstado, tvNombre, tvComprador, tvCantidad, tvPrecio;
@@ -167,5 +174,11 @@ public class Pantalla_historial_ventas_realizadas extends AppCompatActivity {
                 ivImagen = itemView.findViewById(R.id.ivVentaProductoImagen);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

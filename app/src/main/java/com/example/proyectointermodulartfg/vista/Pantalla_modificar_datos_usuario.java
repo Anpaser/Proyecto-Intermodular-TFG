@@ -18,10 +18,14 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_modificar_datos_usuario extends AppCompatActivity {
     private EditText etNombre, etTelefono, etContrasena, etRepContrasena;
     private Button btnConfirmarCambios;
     private ImageButton ibVolverAlPerfil;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,37 +40,28 @@ public class Pantalla_modificar_datos_usuario extends AppCompatActivity {
         btnConfirmarCambios = findViewById(R.id.btnGuardarCambios);
         ibVolverAlPerfil = findViewById(R.id.btnBackModificar);
 
-        btnConfirmarCambios.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                modificarDatos();
-            }
-        });
+        btnConfirmarCambios.setOnClickListener(v -> modificarDatos());
 
-        ibVolverAlPerfil.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                volverAlPerfil();
-            }
-        });
+        ibVolverAlPerfil.setOnClickListener(v -> volverAlPerfil());
     }
 
     private void volverAlPerfil() {
         Intent intent = new Intent(Pantalla_modificar_datos_usuario.this, Pantalla_perfil.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     private void modificarDatos() {
-        SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
-        String correoActualUsuario = prefs.getString("correo_usuario", "");
-
         String nombre = etNombre.getText().toString().trim();
         String telefono = etTelefono.getText().toString().trim();
         String clave = etContrasena.getText().toString().trim();
         String repClave = etRepContrasena.getText().toString().trim();
 
-        new Thread(() -> {
+        SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
+        String correoActualUsuario = prefs.getString("correo_usuario", "");
+
+        executorService.execute(() -> {
             boolean algunCambio = false;
             boolean errorClave = false;
 
@@ -75,16 +70,14 @@ public class Pantalla_modificar_datos_usuario extends AppCompatActivity {
             }
 
             if (!telefono.isEmpty()) {
-                boolean okTel = SupabaseHelper.modificarDatosUsuario("telefono", telefono, correoActualUsuario);
-                algunCambio = algunCambio || okTel;
+                boolean okTelefono = SupabaseHelper.modificarDatosUsuario("telefono", telefono, correoActualUsuario);
+                algunCambio = algunCambio || okTelefono;
             }
 
             if (!clave.isEmpty()) {
                 if (clave.equals(repClave) && clave.length() >= 6) {
                     SupabaseHelper.actualizarPasswordAuth(clave);
-
                     boolean okTabla = SupabaseHelper.modificarDatosUsuario("clave", clave, correoActualUsuario);
-
                     algunCambio = algunCambio || okTabla;
                 } else {
                     errorClave = true;
@@ -97,12 +90,19 @@ public class Pantalla_modificar_datos_usuario extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (finalErrorClave) {
                     Toast.makeText(this, "Las claves deben coincidir y tener 6 caracteres", Toast.LENGTH_SHORT).show();
-                }
-                if (finalAlgunCambio) {
+                } else if (finalAlgunCambio) {
                     Toast.makeText(this, "Cambios guardados con éxito", Toast.LENGTH_SHORT).show();
                     volverAlPerfil();
+                } else if (nombre.isEmpty() && telefono.isEmpty() && clave.isEmpty()) {
+                    Toast.makeText(this, "No has rellenado nada para modificar", Toast.LENGTH_SHORT).show();
                 }
             });
-        }).start();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

@@ -18,10 +18,14 @@ import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 import com.example.proyectointermodulartfg.modelo.Usuario;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_registrarse extends AppCompatActivity {
     private EditText etNombreUsuario, etCorreoElectronico, etTelefono, etClave, etClaveRepetida;
     private TextView tvInicioSesion;
     private Button btnRegistrarse;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +60,7 @@ public class Pantalla_registrarse extends AppCompatActivity {
         Intent intent = new Intent(Pantalla_registrarse.this, Pantalla_login.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     private void registrarse() {
@@ -70,16 +75,22 @@ public class Pantalla_registrarse extends AppCompatActivity {
             return;
         }
 
-        if (!clave.equals(claveRep)) {
-            Toast.makeText(this, "La contraseña y su confirmación deben ser iguales", Toast.LENGTH_SHORT).show();
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+            Toast.makeText(this, "El formato del correo no es válido", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (telefono.length() != 9) {
-            Toast.makeText(this, "El número de teléfono debe contener 9 caracteres", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "El teléfono debe tener 9 dígitos", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        new Thread(() -> {
+        if (!clave.equals(claveRep)) {
+            Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        executorService.execute(() -> {
             Usuario usuario = new Usuario(nombre, correo, clave, telefono);
             boolean usuarioYaRegistrado = SupabaseHelper.existeUsuario(correo);
             if (usuarioYaRegistrado) {
@@ -102,6 +113,12 @@ public class Pantalla_registrarse extends AppCompatActivity {
                     }
                 });
             }
-        }).start();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

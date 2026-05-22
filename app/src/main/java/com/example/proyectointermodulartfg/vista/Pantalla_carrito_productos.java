@@ -3,6 +3,7 @@ package com.example.proyectointermodulartfg.vista;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -23,6 +24,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_carrito_productos extends AppCompatActivity {
 
@@ -34,6 +37,8 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
     private CarritoAdapter adapter;
     private List<ProductoCarrito> listaCarrito = new ArrayList<>();
     private long idUsuarioSesion = -1;
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +66,12 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
         });
         rvCarrito.setAdapter(adapter);
 
-        btnBackCarrito.setOnClickListener(v -> finish());
+        btnBackCarrito.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_carrito_productos.this, Pantalla_principal.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
 
         btnPagar.setOnClickListener(v -> {
             if (listaCarrito.isEmpty()) {
@@ -112,51 +122,50 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
     }
 
     private void cargarDatosCarritoDeBD() {
-        new Thread(() -> {
+        executorService.execute(() -> {
             String jsonRespuesta = SupabaseHelper.obtenerCarritoConProductos(idUsuarioSesion);
 
-            runOnUiThread(() -> {
-                if (jsonRespuesta != null && !jsonRespuesta.isEmpty() && !jsonRespuesta.equals("[]")) {
-                    try {
-                        listaCarrito.clear();
-                        JSONArray jsonArray = new JSONArray(jsonRespuesta);
+            List<ProductoCarrito> listaTemporal = new ArrayList<>();
+            boolean exito = false;
 
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject obj = jsonArray.getJSONObject(i);
+            if (jsonRespuesta != null && !jsonRespuesta.isEmpty() && !jsonRespuesta.equals("[]")) {
+                try {
+                    JSONArray jsonArray = new JSONArray(jsonRespuesta);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject obj = jsonArray.getJSONObject(i);
 
-                            long idProducto = obj.getLong("id_producto");
-                            int cantidad = obj.getInt("cantidad_seleccionada");
+                        long idProducto = obj.getLong("id_producto");
+                        int cantidad = obj.getInt("cantidad_seleccionada");
 
-                            JSONObject productoObj = obj.getJSONObject("Productos");
-                            String nombre = productoObj.getString("nombre");
-                            double precio = productoObj.getDouble("precio");
-                            String imagen = productoObj.getString("imagen");
+                        JSONObject productoObj = obj.getJSONObject("Productos");
+                        String nombre = productoObj.getString("nombre");
+                        double precio = productoObj.getDouble("precio");
+                        String imagen = productoObj.getString("imagen");
 
-                            ProductoCarrito item = new ProductoCarrito(
-                                    -1,
-                                    idUsuarioSesion,
-                                    idProducto,
-                                    cantidad,
-                                    nombre,
-                                    precio,
-                                    imagen
-                            );
-                            listaCarrito.add(item);
-                        }
-                        adapter.notifyDataSetChanged();
-                        actualizarTotal();
-
-                    } catch (Exception e) {
-                        android.util.Log.e("CARRITO_PARSE", "Error parseando carrito: " + e.getMessage());
-                        Toast.makeText(this, "Error al procesar los datos del carrito", Toast.LENGTH_SHORT).show();
+                        ProductoCarrito item = new ProductoCarrito(
+                                -1, idUsuarioSesion, idProducto, cantidad, nombre, precio, imagen
+                        );
+                        listaTemporal.add(item);
                     }
-                } else {
-                    listaCarrito.clear();
-                    adapter.notifyDataSetChanged();
-                    actualizarTotal();
+                    exito = true;
+                } catch (Exception e) {
+                    Log.e("CARRITO_PARSE", "Error parseando carrito: " + e.getMessage());
                 }
+            }
+
+            final boolean finalExito = exito;
+
+            runOnUiThread(() -> {
+                listaCarrito.clear();
+                if (finalExito) {
+                    listaCarrito.addAll(listaTemporal);
+                } else if (jsonRespuesta != null && !jsonRespuesta.equals("[]")) {
+                    Toast.makeText(this, "Error al procesar los datos del carrito", Toast.LENGTH_SHORT).show();
+                }
+                adapter.notifyDataSetChanged();
+                actualizarTotal();
             });
-        }).start();
+        });
     }
 
     private void actualizarTotal() {
@@ -177,7 +186,7 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
     }
 
     private void eliminarProductoDeBD(ProductoCarrito item) {
-        new Thread(() -> {
+        executorService.execute(() -> {
             boolean ok = SupabaseHelper.eliminarDelCarrito(item.getId_usuario(), item.getId_producto());
             runOnUiThread(() -> {
                 if (ok) {
@@ -188,6 +197,12 @@ public class Pantalla_carrito_productos extends AppCompatActivity {
                     Toast.makeText(this, "Error al eliminar de la base de datos", Toast.LENGTH_SHORT).show();
                 }
             });
-        }).start();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

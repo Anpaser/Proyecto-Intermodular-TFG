@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_pago_compra extends AppCompatActivity {
 
@@ -42,16 +44,26 @@ public class Pantalla_pago_compra extends AppCompatActivity {
     private double totalFinal = 0.0;
     private boolean direccionSeleccionada = false;
     private boolean pagoSeleccionado = false;
+
     private ActivityResultLauncher<Intent> launcherDireccion;
     private ActivityResultLauncher<Intent> launcherPago;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pantalla_pago_compra);
+
+        // 1. Enlazamos las vistas
         inicializarVistas();
+
+        // 2. Preparamos los Launchers para los ActivityResult
         configurarLaunchers();
+
+        // 3. Cargamos los datos del Intent
         cargarPrecios();
+
+        // 4. Asignamos todos los clics de botones de forma centralizada
         configurarPulsadores();
     }
 
@@ -105,7 +117,12 @@ public class Pantalla_pago_compra extends AppCompatActivity {
     }
 
     private void configurarPulsadores() {
-        btnBackPago.setOnClickListener(v -> finish());
+        btnBackPago.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_carrito_productos.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
 
         cvDireccionEnvio.setOnClickListener(v -> {
             Intent intent = new Intent(this, Pantalla_seleccionar_direccion.class);
@@ -123,44 +140,27 @@ public class Pantalla_pago_compra extends AppCompatActivity {
                 return;
             }
             procesarCompra();
-            Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_principal.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
         });
     }
 
     private void procesarCompra() {
         btnFinalizarCompra.setEnabled(false);
+        btnFinalizarCompra.setText("Procesando...");
 
-        new Thread(() -> {
+        SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
+        long idUsuario = prefs.getLong("id_usuario", -1);
+
+        executorService.execute(() -> {
             try {
-                SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
-                String correoUsuario = prefs.getString("correo_usuario", null);
-
-                if (correoUsuario == null) {
-                    throw new Exception("No hay un usuario logueado (correo no encontrado).");
+                if (idUsuario == -1) {
+                    throw new Exception("No hay un usuario logueado. Inicia sesión de nuevo.");
                 }
-
-                String jsonUsuario = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
-
-                if (jsonUsuario == null) {
-                    throw new Exception("No se encontró el usuario en la base de datos.");
-                }
-
-                JSONArray arrayUsuario = new JSONArray(jsonUsuario);
-                long idUsuario = arrayUsuario.getJSONObject(0).getLong("id");
 
                 long idDireccion = SupabaseHelper.insertarDireccion(
                         idUsuario,
                         tvDetalleDireccion.getText().toString(),
-                        "S/N",
-                        "",
-                        "00000",
-                        "Ciudad",
-                        "Provincia"
+                        "S/N", "", "00000", "Ciudad", "Provincia"
                 );
-
                 if (idDireccion == -1) throw new Exception("Error al guardar la dirección");
 
                 long idPedido = SupabaseHelper.crearPedido(idUsuario, idDireccion, totalFinal);
@@ -186,7 +186,7 @@ public class Pantalla_pago_compra extends AppCompatActivity {
                 }
 
                 boolean detallesOk = SupabaseHelper.insertarDetallesDesdeJson(detallesParaEnviar.toString());
-                if (!detallesOk) throw new Exception("Error al insertar detalles del pedido");
+                if (!detallesOk) throw new Exception("Error al insertar los detalles del pedido");
 
                 boolean stockOk = SupabaseHelper.actualizarStockProductos(arrayCarrito);
                 if (!stockOk) {
@@ -194,12 +194,13 @@ public class Pantalla_pago_compra extends AppCompatActivity {
                 }
 
                 SupabaseHelper.vaciarCarritoCompleto(idUsuario);
+
                 generarFacturaPDF(idPedido, arrayCarrito);
 
                 runOnUiThread(() -> {
                     Toast.makeText(this, "¡Compra realizada con éxito!", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Pantalla_pago_compra.this, Pantalla_historial_pedidos_realizados.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
                 });
@@ -207,11 +208,12 @@ public class Pantalla_pago_compra extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     btnFinalizarCompra.setEnabled(true);
+                    btnFinalizarCompra.setText("Finalizar Compra");
                     Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     Log.e("ERROR_COMPRA", "Fallo en procesarCompra", e);
                 });
             }
-        }).start();
+        });
     }
 
     private void generarFacturaPDF(long idPedido, JSONArray itemsCarrito) {
@@ -243,7 +245,9 @@ public class Pantalla_pago_compra extends AppCompatActivity {
                 canvas.drawText(linea, 20, yPos, paint);
                 yPos += 20;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            Log.e("PDF", "Error leyendo items del carrito para el PDF");
+        }
 
         canvas.drawText("------------------------------------------", 20, yPos + 10, paint);
         paint.setFakeBoldText(true);
@@ -251,12 +255,27 @@ public class Pantalla_pago_compra extends AppCompatActivity {
 
         document.finishPage(page);
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Factura_" + idPedido + ".pdf");
-        try {
-            document.writeTo(new FileOutputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
+        File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (dir != null && !dir.exists()) {
+            dir.mkdirs();
         }
-        document.close();
+        File file = new File(dir, "Factura_" + idPedido + ".pdf");
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            document.writeTo(fos);
+            Log.d("PDF", "Factura guardada en: " + file.getAbsolutePath());
+        } catch (IOException e) {
+            Log.e("PDF", "Error al guardar el PDF", e);
+        } finally {
+            document.close();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) {
+            executorService.shutdown();
+        }
     }
 }

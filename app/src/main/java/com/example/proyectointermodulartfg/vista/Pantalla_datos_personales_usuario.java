@@ -20,9 +20,13 @@ import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_datos_personales_usuario extends AppCompatActivity {
     private TextView tvNombre, tvCorreo, tvTelefono, tvFechaCreacion;
     private ImageButton ibAtras;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +40,11 @@ public class Pantalla_datos_personales_usuario extends AppCompatActivity {
         tvFechaCreacion = findViewById(R.id.tvDatoFecha);
         ibAtras = findViewById(R.id.btnBackDatos);
 
-        ibAtras.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Pantalla_datos_personales_usuario.this, Pantalla_perfil.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            }
+        ibAtras.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_datos_personales_usuario.this, Pantalla_perfil.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
         });
 
         obtenerDatos();
@@ -52,7 +54,7 @@ public class Pantalla_datos_personales_usuario extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
         String correo = prefs.getString("correo_usuario", "");
 
-        new Thread(() -> {
+        executorService.execute(() -> {
             String resultadoConsulta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
             runOnUiThread(() -> {
                 if (resultadoConsulta != null) {
@@ -60,20 +62,30 @@ public class Pantalla_datos_personales_usuario extends AppCompatActivity {
                         JSONArray array = new JSONArray(resultadoConsulta);
                         JSONObject object = array.getJSONObject(0);
 
-                        String nombre = object.getString("nombre");
-                        String telefono = object.getString("telefono");
-                        String fecha = object.getString("created_at");
+                        String nombre = object.optString("nombre", "Nombre desconocido");
+                        String telefono = object.optString("telefono", "Teléfono desconocido");
+                        String fecha = object.optString("created_at", "Fecha desconocida");
+
+                        if (nombre.equals("null")) nombre = "Nombre desconocido";
+                        if (telefono.equals("null")) telefono = "Teléfono desconocido";
 
                         tvCorreo.setText(correo);
-                        if (!nombre.isEmpty()) tvNombre.setText(nombre); else tvNombre.setText("Nombre desconocido");
-                        if (!telefono.isEmpty()) tvTelefono.setText(telefono); else tvTelefono.setText("Teléfono desconocido");
-                        if (!fecha.isEmpty()) tvFechaCreacion.setText(fecha); else tvFechaCreacion.setText("Fecha desconocida");
+                        tvNombre.setText(nombre);
+                        tvTelefono.setText(telefono);
+
+                        tvFechaCreacion.setText(fecha.split("T")[0]);
 
                     } catch (Exception e) {
                         Toast.makeText(this, "Datos de usuario no encontrados", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
-        }).start();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

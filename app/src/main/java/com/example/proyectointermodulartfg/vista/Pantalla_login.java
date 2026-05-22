@@ -26,6 +26,9 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @SuppressWarnings("deprecation")
 public class Pantalla_login extends AppCompatActivity {
     private EditText etCorreo, etClave;
@@ -35,6 +38,7 @@ public class Pantalla_login extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private ActivityResultLauncher<Intent> googleLauncher;
     private final String WEB_CLIENT_ID = "491560371485-56c1ir2utkud03vmord2ak6qb2mhc8jt.apps.googleusercontent.com";
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,7 @@ public class Pantalla_login extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
                         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                        handleSignInResult(task);
+                        loginGoogle(task);
                     }
                 }
         );
@@ -69,31 +73,35 @@ public class Pantalla_login extends AppCompatActivity {
         tvRecuperarClave.setOnClickListener(v -> recuperarClave());
         tvRegistrarse.setOnClickListener(v -> registrarse());
 
-        btnLogin.setOnClickListener(v -> new Thread(() -> {
-            String correo = etCorreo.getText().toString().trim();
-            boolean validador = SupabaseHelper.estructuraCorreoValida(correo);
-            runOnUiThread(() -> {
-                if (validador) login();
-                else Toast.makeText(Pantalla_login.this, "El correo tiene un formato inválido", Toast.LENGTH_SHORT).show();
-            });
-        }).start());
+        btnLogin.setOnClickListener(v ->
+            executorService.execute(() -> {
+                String correo = etCorreo.getText().toString().trim();
+                boolean validador = SupabaseHelper.estructuraCorreoValida(correo);
+                runOnUiThread(() -> {
+                    if (validador) login();
+                    else Toast.makeText(Pantalla_login.this, "El correo tiene un formato inválido", Toast.LENGTH_SHORT).show();
+                });
+            })
+        );
 
         btnGoogleLogin.setOnClickListener(v -> lanzarLoginGoogle());
     }
 
     private void lanzarLoginGoogle() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        googleLauncher.launch(signInIntent);
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            googleLauncher.launch(signInIntent);
+        });
     }
 
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+    private void loginGoogle(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             String idToken = account.getIdToken();
             String correo = account.getEmail();
             String nombreGoogle = account.getDisplayName();
 
-            new Thread(() -> {
+            executorService.execute(() -> {
                 boolean exitoAuth = SupabaseHelper.logearConGoogle(idToken);
 
                 if (exitoAuth) {
@@ -108,9 +116,18 @@ public class Pantalla_login extends AppCompatActivity {
                     }
 
                     int rol = SupabaseHelper.obtenerRolUsuario(correo);
+                    long idUsuarioTemp = -1;
+                    try {
+                        String jsonUser = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
+                        idUsuarioTemp = new org.json.JSONArray(jsonUser).getJSONObject(0).getLong("id");
+                    } catch (Exception e) {
+                        Log.e("LOGIN_GOOGLE", "Error obteniendo ID: " + e.getMessage());
+                    }
+
+                    final long idUsuarioFinal = idUsuarioTemp;
 
                     runOnUiThread(() -> {
-                        confirmacionLoginRealizado(correo, rol);
+                        confirmacionLoginRealizado(correo, rol, idUsuarioFinal);
 
                         Intent intent;
                         if (rol == 1) {
@@ -126,7 +143,7 @@ public class Pantalla_login extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> Toast.makeText(this, "Error en Supabase Auth", Toast.LENGTH_SHORT).show());
                 }
-            }).start();
+            });
 
         } catch (ApiException e) {
             Log.e("GoogleAuth", "Error: " + e.getStatusCode());
@@ -143,14 +160,24 @@ public class Pantalla_login extends AppCompatActivity {
             return;
         }
 
-        new Thread(() -> {
+        executorService.execute(() -> {
             Usuario usuario = new Usuario(correo, clave);
             boolean existe = SupabaseHelper.logearUsuario(usuario);
 
             if (existe) {
                 int rol = SupabaseHelper.obtenerRolUsuario(correo);
+                long idUsuarioTemp = -1;
+                try {
+                    String jsonUser = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
+                    idUsuarioTemp = new org.json.JSONArray(jsonUser).getJSONObject(0).getLong("id");
+                } catch (Exception e) {
+                    Log.e("LOGIN", "Error obteniendo ID: " + e.getMessage());
+                }
+
+                final long idUsuarioFinal = idUsuarioTemp;
+
                 runOnUiThread(() -> {
-                    confirmacionLoginRealizado(correo, rol);
+                    confirmacionLoginRealizado(correo, rol, idUsuarioFinal);
                     Intent intent;
                     if (rol == 1) {
                         intent = new Intent(Pantalla_login.this, Pantalla_panel_administrador.class);
@@ -164,7 +191,7 @@ public class Pantalla_login extends AppCompatActivity {
             } else {
                 runOnUiThread(() -> Toast.makeText(this, "El usuario o contraseña son incorrectos", Toast.LENGTH_SHORT).show());
             }
-        }).start();
+        });
     }
 
     private void recuperarClave() {
@@ -181,11 +208,18 @@ public class Pantalla_login extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void confirmacionLoginRealizado(String correo, int rol) {
+    private void confirmacionLoginRealizado(String correo, int rol, long id) {
         SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("correo_usuario", correo);
         editor.putInt("rol_usuario", rol);
+        editor.putLong("id_usuario", id);
         editor.apply();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

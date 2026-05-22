@@ -28,6 +28,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import kotlin.Pair;
 import kotlinx.serialization.json.JsonElement;
@@ -50,6 +52,7 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
     private Button btnAgregarCarrito;
     private long idProductoSeleccionado = -1;
     private long idUsuarioSesion = -1;
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,9 +95,11 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
         svBusqueda.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.length() > 2 || newText.isEmpty()) cargarProductos(newText, categoriaSeleccionada);
+                if (newText.length() > 2 || newText.isEmpty())
+                    cargarProductos(newText, categoriaSeleccionada);
                 return true;
             }
+
             @Override
             public boolean onQueryTextSubmit(String query) {
                 cargarProductos(query, categoriaSeleccionada);
@@ -131,7 +136,7 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                 return;
             }
 
-            new Thread(() -> {
+            executorService.execute(() -> {
                 int cantidadInicial = 1;
                 boolean ok = SupabaseHelper.agregarAlCarrito(idUsuarioSesion, idProductoSeleccionado, cantidadInicial);
 
@@ -142,10 +147,28 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                         Toast.makeText(this, "Error al añadir", Toast.LENGTH_SHORT).show();
                     }
                 });
-            }).start();
+            });
         });
 
         findViewById(R.id.btnCerrarDetalle).setOnClickListener(v -> layoutDetalle.setVisibility(View.GONE));
+
+        rbUsuarioValoracion.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
+            if (fromUser && idProductoSeleccionado != -1) {
+                executorService.execute(() -> {
+                    SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
+                    long idUsuario = prefs.getLong("id_usuario", -1);
+                    if (idUsuario != -1) {
+                        boolean exito = SupabaseHelper.insertarValoracion(idUsuario, idProductoSeleccionado, (int) rating);
+                        runOnUiThread(() -> {
+                            if (exito) Toast.makeText(this, "¡Valoración guardada!", Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(this, "Fallo al guardar en BD", Toast.LENGTH_SHORT).show();
+                        });
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(this, "Error de sesión", Toast.LENGTH_SHORT).show());
+                    }
+                });
+            }
+        });
     }
 
     private void obtenerIdUsuarioYNombre() {
@@ -153,31 +176,29 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
         String correo = prefs.getString("correo_usuario", "");
         if (correo.isEmpty()) return;
 
-        new Thread(() -> {
+        executorService.execute(() -> {
             String respuesta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
-            runOnUiThread(() -> {
-                if (respuesta != null && !respuesta.isEmpty()) {
-                    try {
-                        JSONArray array = new JSONArray(respuesta);
-                        if (array.length() > 0) {
-                            JSONObject objeto = array.getJSONObject(0);
+            if (respuesta != null && !respuesta.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(respuesta);
+                    if (array.length() > 0) {
+                        JSONObject objeto = array.getJSONObject(0);
 
-                            // Guardamos la ID del usuario en la variable global para usarla en el carrito
-                            if (objeto.has("id_usuario")) {
-                                idUsuarioSesion = objeto.getLong("id_usuario");
-                            } else if (objeto.has("id")) {
-                                idUsuarioSesion = objeto.getLong("id");
-                            }
-
-                            String nombreReal = objeto.getString("nombre");
-                            nombrePantalla.setText("Hola, " + nombreReal + " \uD83D\uDC4B");
+                        if (objeto.has("id_usuario")) {
+                            idUsuarioSesion = objeto.getLong("id_usuario");
+                        } else if (objeto.has("id")) {
+                            idUsuarioSesion = objeto.getLong("id");
                         }
-                    } catch (Exception e) {
-                        nombrePantalla.setText("Hola, Usuario \uD83D\uDC4B");
+
+                        String nombreReal = objeto.getString("nombre");
+                        runOnUiThread(() -> nombrePantalla.setText("Hola, " + nombreReal + " \uD83D\uDC4B"));
                     }
+                } catch (Exception e) {
+                    runOnUiThread(() -> nombrePantalla.setText("Hola, Usuario \uD83D\uDC4B"));
                 }
-            });
-        }).start();
+            }
+        });
+
     }
 
     private void cambiarPantalla(Class<?> pantalla) {
@@ -187,17 +208,17 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
     }
 
     private void cargarProductos(String busqueda, String categoria) {
-        listaProductos.clear();
-        adapter.notifyDataSetChanged();
-        new Thread(() -> {
+
+        executorService.execute(() -> {
             List<JsonObject> productosTienda = SupabaseHelper.buscarProductos(busqueda, categoria);
             runOnUiThread(() -> {
                 if (productosTienda != null) {
+                    listaProductos.clear();
                     listaProductos.addAll(productosTienda);
                     adapter.notifyDataSetChanged();
                 }
             });
-        }).start();
+        });
     }
 
     @Override
@@ -231,7 +252,9 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                             vendedor = ((JsonObject) array.get(0)).get("nombre").toString().replace("\"", "");
                         }
                     }
-                } catch (Exception e) { vendedor = "Anónimo"; }
+                } catch (Exception e) {
+                    vendedor = "Anónimo";
+                }
             }
 
             String categoriaText = "General";
@@ -246,56 +269,18 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                             categoriaText = ((JsonObject) array.get(0)).get("nombre_categoria").toString().replace("\"", "");
                         }
                     }
-                } catch (Exception e) { categoriaText = "General"; }
+                } catch (Exception e) {
+                    categoriaText = "General";
+                }
             }
 
             rbUsuarioValoracion.setRating(0);
-            new Thread(() -> {
+            executorService.execute(() -> {
                 Pair<Float, Integer> stats = SupabaseHelper.obtenerEstadisticasValoracion(idProductoSeleccionado);
                 runOnUiThread(() -> {
                     rbMediaValoracion.setRating(stats.getFirst());
                     tvNumValoraciones.setText("(" + stats.getSecond() + " valoraciones)");
                 });
-            }).start();
-
-            rbUsuarioValoracion.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
-                if (fromUser) {
-                    new Thread(() -> {
-                        SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
-                        String correo = prefs.getString("correo_usuario", "");
-
-                        if (correo.isEmpty()) return;
-
-                        String userData = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
-                        if (userData != null && !userData.equals("[]")) {
-                            try {
-                                JSONArray array = new JSONArray(userData);
-                                if (array.length() > 0) {
-                                    JSONObject userObj = array.getJSONObject(0);
-
-                                    long idUsuario = -1;
-                                    if (userObj.has("id_usuario")) {
-                                        idUsuario = userObj.getLong("id_usuario");
-                                    } else if (userObj.has("id")) {
-                                        idUsuario = userObj.getLong("id");
-                                    }
-
-                                    if (idUsuario != -1) {
-                                        boolean exito = SupabaseHelper.insertarValoracion(idUsuario, idProductoSeleccionado, (int) rating);
-                                        runOnUiThread(() -> {
-                                            if (exito) Toast.makeText(this, "¡Valoración guardada!", Toast.LENGTH_SHORT).show();
-                                            else Toast.makeText(this, "Fallo al guardar en BD", Toast.LENGTH_SHORT).show();
-                                        });
-                                    } else {
-                                        runOnUiThread(() -> Toast.makeText(this, "Error: No se encontró la ID del usuario", Toast.LENGTH_SHORT).show());
-                                    }
-                                }
-                            } catch (Exception e) {
-                                android.util.Log.e("VALORACION_USER", "Error al leer JSON: " + e.getMessage());
-                            }
-                        }
-                    }).start();
-                }
             });
 
             detNombre.setText(nombre);
@@ -309,7 +294,9 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                 if (producto.get("stock") != null) {
                     stock = (int) Double.parseDouble(producto.get("stock").toString().replace("\"", ""));
                 }
-            } catch (Exception e) { stock = 0; }
+            } catch (Exception e) {
+                stock = 0;
+            }
 
             detStock.setText("Stock disponible: " + stock + " unidades");
             detAlertaStock.setVisibility((stock > 0 && stock <= 5) ? View.VISIBLE : View.GONE);
@@ -321,5 +308,11 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
             android.util.Log.e("CRASH_DETALLE", "Error general: " + e.getMessage());
             Toast.makeText(this, "Error al cargar el detalle del producto", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

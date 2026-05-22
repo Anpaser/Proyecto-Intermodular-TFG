@@ -14,10 +14,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.proyectointermodulartfg.R;
 import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_recuperar_contrasena extends AppCompatActivity {
     private EditText etCorreoRecuperar;
     private Button btnEnviarCorreo;
     private TextView tvVolver;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,7 @@ public class Pantalla_recuperar_contrasena extends AppCompatActivity {
         Intent intent = new Intent(Pantalla_recuperar_contrasena.this, Pantalla_login.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     private void enviarCodigo() {
@@ -60,29 +66,36 @@ public class Pantalla_recuperar_contrasena extends AppCompatActivity {
             return;
         }
 
-        new Thread(() -> {
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+            Toast.makeText(this, "Por favor, introduce un formato de email válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        executorService.execute(() -> {
             boolean verificacionEnviar = SupabaseHelper.enviarCodigoRecuperacion(correo);
-            try {
-                runOnUiThread(() -> {
-                    if (verificacionEnviar) {
-                        Intent intent = new Intent(Pantalla_recuperar_contrasena.this, Pantalla_recuperar_contrasena_codigoVerificacion.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.putExtra("correo", correo);
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(this, "Fallo en el proceso de envio del código", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
+            runOnUiThread(() -> {
+                if (verificacionEnviar) {
+                    Intent intent = new Intent(Pantalla_recuperar_contrasena.this, Pantalla_recuperar_contrasena_codigoVerificacion.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.putExtra("correo", correo);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Fallo en el proceso de envio del código", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
 
     private void obtenerCorreo() {
         String correoLog = getIntent().getStringExtra("correo");
-        if (!correoLog.isEmpty()) {
+        if (correoLog != null && !correoLog.isEmpty()) {
             etCorreoRecuperar.setText(correoLog);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

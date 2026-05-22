@@ -3,6 +3,7 @@ package com.example.proyectointermodulartfg.vista;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -14,7 +15,11 @@ import com.example.proyectointermodulartfg.controlador.SupabaseHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_de_carga extends AppCompatActivity {
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,41 +41,51 @@ public class Pantalla_de_carga extends AppCompatActivity {
         if (correo == null) {
             irAlLogin();
         } else {
-            new Thread(() -> {
-                boolean existe = SupabaseHelper.existeUsuario(correo);
-                int rol = SupabaseHelper.obtenerRolUsuario(correo);
-
+            executorService.execute(() -> {
                 String respuesta = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
-
                 runOnUiThread(() -> {
                     try {
                         JSONArray array = new JSONArray(respuesta);
+
                         if (array.length() > 0) {
                             JSONObject objeto = array.getJSONObject(0);
-                            String nombreReal = objeto.getString("nombre");
-                            Toast.makeText(this, "Bienvenido/a " + nombreReal, Toast.LENGTH_SHORT).show();
+
+                            long id = objeto.getLong("id");
+                            int rol = objeto.getInt("id_rol");
+                            String nombre = objeto.optString("nombre", "Usuario");
+
+                            SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putLong("id_usuario", id);
+                            editor.putInt("rol_usuario", rol);
+                            editor.apply();
+
+                            Toast.makeText(this, "Bienvenido/a " + nombre, Toast.LENGTH_SHORT).show();
+
+                            lanzarSiguientePantalla(rol);
+                        } else {
+                            irAlLogin();
                         }
                     } catch (Exception e) {
-                        Toast.makeText(this, "Bienvenido/a", Toast.LENGTH_SHORT).show();
-                    }
-
-                    if (existe) {
-                        Intent intent;
-                        if (rol == 1) {
-                            intent = new Intent(Pantalla_de_carga.this, Pantalla_panel_administrador.class);
-                        } else {
-                            intent = new Intent(Pantalla_de_carga.this, Pantalla_principal.class);
-                        }
-
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    } else {
+                        Log.e("SPLASH", "Error procesando datos: " + e.getMessage());
                         irAlLogin();
                     }
                 });
-            }).start();
+            });
         }
+    }
+
+    private void lanzarSiguientePantalla(int rol) {
+        Intent intent;
+        if (rol == 1) {
+            intent = new Intent(Pantalla_de_carga.this, Pantalla_panel_administrador.class);
+        } else {
+            intent = new Intent(Pantalla_de_carga.this, Pantalla_principal.class);
+        }
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
     }
 
     private void irAlLogin() {
@@ -78,5 +93,11 @@ public class Pantalla_de_carga extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

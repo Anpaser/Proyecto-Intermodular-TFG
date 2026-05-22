@@ -24,9 +24,14 @@ public class Pantalla_seleccionar_pago extends AppCompatActivity {
         setContentView(R.layout.activity_pantalla_seleccionar_pago);
 
         inicializarVistas();
-        cargarPagoGuardado(); // Cargar datos previos
+        cargarPagoGuardado();
 
-        btnBackPago.setOnClickListener(v -> finish());
+        btnBackPago.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_seleccionar_pago.this, Pantalla_pago_compra.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
 
         btnUsarTarjeta.setOnClickListener(v -> {
             String titular = etTitularTarjeta.getText().toString().trim();
@@ -39,16 +44,15 @@ public class Pantalla_seleccionar_pago extends AppCompatActivity {
                 return;
             }
 
-            // GUARDAR DATOS (Excepto el CVV por seguridad)
-            SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+            SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("pago_titular", titular);
             editor.putString("pago_numero", numero);
             editor.putString("pago_fecha", fecha);
             editor.apply();
 
-            String ultimos4 = numero.substring(numero.length() - 4);
-            String tarjetaSeleccionada = "Tarjeta (**** " + ultimos4 + ")";
+            String ultimosDigitos = numero.substring(numero.length() - 4);
+            String tarjetaSeleccionada = "Tarjeta (**** " + ultimosDigitos + ")";
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra("TARJETA_SELECCIONADA", tarjetaSeleccionada);
@@ -68,11 +72,10 @@ public class Pantalla_seleccionar_pago extends AppCompatActivity {
     }
 
     private void cargarPagoGuardado() {
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
         etTitularTarjeta.setText(prefs.getString("pago_titular", ""));
         etNumeroTarjeta.setText(prefs.getString("pago_numero", ""));
         etFechaExp.setText(prefs.getString("pago_fecha", ""));
-        // El CVV siempre vacío por seguridad teórica en el TFG
         etCVV.setText("");
     }
 }

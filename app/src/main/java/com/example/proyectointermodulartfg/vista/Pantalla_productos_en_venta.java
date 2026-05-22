@@ -28,6 +28,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Pantalla_productos_en_venta extends AppCompatActivity {
 
@@ -35,6 +37,7 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
     private TextView tvTotalVentasNum, tvGananciasNum;
     private RecyclerView rvMisVentas;
     private ExtendedFloatingActionButton fabNuevoProducto;
+    private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +45,13 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
         setContentView(R.layout.activity_pantalla_productos_en_venta);
 
         vincularVistas();
-        cargarMisProductos();
 
-        btnBackVentas.setOnClickListener(v -> finish());
+        btnBackVentas.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_productos_en_venta.this, Pantalla_principal.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
 
         fabNuevoProducto.setOnClickListener(v -> {
             Intent intent = new Intent(this, Pantalla_crear_producto.class);
@@ -70,52 +77,52 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
     }
 
     private void cargarMisProductos() {
-        new Thread(() -> {
+        executorService.execute(() -> {
             try {
                 SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
-                String correoUsuario = prefs.getString("correo_usuario", null);
-
-                String jsonUsuario = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correoUsuario);
-                long idUsuario = new JSONArray(jsonUsuario).getJSONObject(0).getLong("id");
+                long idUsuario = prefs.getLong("id_usuario", -1);
 
                 String jsonProductos = SupabaseHelper.obtenerDatosTablas("Productos", "id_usuario", String.valueOf(idUsuario));
 
-                runOnUiThread(() -> {
-                    if (jsonProductos != null && !jsonProductos.equals("[]")) {
-                        try {
-                            JSONArray array = new JSONArray(jsonProductos);
-                            List<JSONObject> lista = new ArrayList<>();
-                            double valorInventario = 0.0;
+                if (jsonProductos != null && !jsonProductos.equals("[]")) {
+                    try {
+                        JSONArray array = new JSONArray(jsonProductos);
+                        List<JSONObject> lista = new ArrayList<>();
+                        double valorInventarioTem = 0.0;
 
-                            for (int i = 0; i < array.length(); i++) {
-                                JSONObject prod = array.getJSONObject(i);
-                                lista.add(prod);
-                                valorInventario += prod.getDouble("precio") * prod.getInt("stock");
-                            }
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject prod = array.getJSONObject(i);
+                            lista.add(prod);
+                            valorInventarioTem += prod.getDouble("precio") * prod.getInt("stock");
+                        }
+                        final double valorInventario = valorInventarioTem;
 
+                        runOnUiThread(() -> {
                             tvTotalVentasNum.setText(String.valueOf(lista.size()));
                             tvGananciasNum.setText(String.format("%.2f €", valorInventario));
 
                             ProductosEnVentaAdapter adapter = new ProductosEnVentaAdapter(lista);
                             rvMisVentas.setAdapter(adapter);
+                        });
 
-                        } catch (Exception e) {
-                            Log.e("PRODUCTOS", "Error parseando JSON", e);
-                        }
-                    } else {
+                    } catch (Exception e) {
+                        Log.e("PRODUCTOS", "Error parseando JSON", e);
+                    }
+                } else {
+                    runOnUiThread(() -> {
                         tvTotalVentasNum.setText("0");
                         tvGananciasNum.setText("0.00 €");
                         rvMisVentas.setAdapter(new ProductosEnVentaAdapter(new ArrayList<>()));
-                    }
-                });
+                    });
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     private void eliminarProductoDeLaBaseDeDatos(long idProducto) {
-        new Thread(() -> {
+        executorService.execute(() -> {
             boolean exito = SupabaseHelper.eliminarProducto(idProducto);
             runOnUiThread(() -> {
                 if (exito) {
@@ -125,7 +132,7 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
                     Toast.makeText(this, "Error al eliminar el producto", Toast.LENGTH_SHORT).show();
                 }
             });
-        }).start();
+        });
     }
 
     private class ProductosEnVentaAdapter extends RecyclerView.Adapter<ProductosEnVentaAdapter.ViewHolder> {
@@ -196,5 +203,11 @@ public class Pantalla_productos_en_venta extends AppCompatActivity {
                 ivImagen = itemView.findViewById(R.id.ivVentaImagen);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

@@ -51,6 +51,7 @@ public class Pantalla_recuperar_contrasena_codigoVerificacion extends AppCompatA
         Intent intent = new Intent(Pantalla_recuperar_contrasena_codigoVerificacion.this, Pantalla_login.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     private void validarCodigo() {

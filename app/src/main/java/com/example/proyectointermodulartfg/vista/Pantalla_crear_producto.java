@@ -1,6 +1,7 @@
 package com.example.proyectointermodulartfg.vista;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -19,18 +20,19 @@ import com.google.android.material.textfield.TextInputEditText;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Pantalla_crear_producto extends AppCompatActivity {
 
     private TextInputEditText etNombre, etDescripcion, etPrecio, etStock, etImagen;
     private AutoCompleteTextView autoCategoria;
     private MaterialButton btnGuardar;
     private ImageButton btnVolver;
-    private TextView tvTitulo;
-
     private final String[] CATEGORIAS = {"Moda", "Hogar", "Belleza", "Electrónica"};
-
     private boolean esModoEdicion = false;
     private long idProductoAEditar = -1;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,12 @@ public class Pantalla_crear_producto extends AppCompatActivity {
         configurarDesplegable();
         comprobarModoEdicion();
 
-        btnVolver.setOnClickListener(v -> finish());
+        btnVolver.setOnClickListener(v -> {
+            Intent intent = new Intent(Pantalla_crear_producto.this, Pantalla_principal.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        });
         btnGuardar.setOnClickListener(v -> validarYGuardarProducto());
     }
 
@@ -54,7 +61,6 @@ public class Pantalla_crear_producto extends AppCompatActivity {
         autoCategoria = findViewById(R.id.autoCategoria);
         etImagen = findViewById(R.id.etImagenProducto);
         btnGuardar = findViewById(R.id.btnGuardarProducto);
-        tvTitulo = findViewById(android.R.id.text1);
     }
 
     private void configurarDesplegable() {
@@ -114,19 +120,14 @@ public class Pantalla_crear_producto extends AppCompatActivity {
     }
 
     private void ejecutarOperacion(String nombre, String desc, double precio, int stock, long idCat, String img) {
-        new Thread(() -> {
+        executorService.execute(() -> {
             try {
                 boolean exito;
                 if (esModoEdicion) {
-                    // ACTUALIZAR FILA EXISTENTE
                     exito = SupabaseHelper.actualizarProducto(idProductoAEditar, idCat, nombre, desc, precio, img, stock);
                 } else {
-                    // INSERTAR NUEVA FILA
                     SharedPreferences prefs = getSharedPreferences("SesionUsuario", Context.MODE_PRIVATE);
-                    String correo = prefs.getString("correo_usuario", null);
-                    String jsonUser = SupabaseHelper.obtenerDatosTablas("Usuarios", "correo", correo);
-                    long idUser = new JSONArray(jsonUser).getJSONObject(0).getLong("id");
-
+                    long idUser = prefs.getLong("id_usuario", -1);
                     exito = SupabaseHelper.insertarProducto(idUser, idCat, nombre, desc, precio, img, stock);
                 }
 
@@ -142,7 +143,7 @@ public class Pantalla_crear_producto extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> btnGuardar.setEnabled(true));
             }
-        }).start();
+        });
     }
 
     private long obtenerIdDesdeNombre(String nombre) {
@@ -153,5 +154,11 @@ public class Pantalla_crear_producto extends AppCompatActivity {
             case "Electrónica": return 4;
             default: return 1;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) executorService.shutdown();
     }
 }

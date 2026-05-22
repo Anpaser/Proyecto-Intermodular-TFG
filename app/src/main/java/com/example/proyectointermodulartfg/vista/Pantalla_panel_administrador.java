@@ -37,7 +37,7 @@ public class Pantalla_panel_administrador extends AppCompatActivity {
     }
 
     private class TablasAdapter extends RecyclerView.Adapter<TablasAdapter.ViewHolder> {
-        private List<String> tablas;
+        private final List<String> tablas;
 
         public TablasAdapter(List<String> tablas) {
             this.tablas = tablas;
