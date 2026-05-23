@@ -51,7 +51,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:paddingVertical="16dp" />
+                android:paddingVertical="16dp"
+                android:textColor="@color/cardview_dark_background"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -71,7 +72,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
-                android:paddingVertical="16dp" />
+                android:paddingVertical="16dp"
+                android:textColor="@color/cardview_dark_background"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -91,7 +93,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="phone"
-                android:paddingVertical="16dp" />
+                android:paddingVertical="16dp"
+                android:textColor="@color/cardview_dark_background"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -112,7 +115,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:paddingVertical="16dp" />
+                android:paddingVertical="16dp"
+                android:textColor="@color/cardview_dark_background"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -133,7 +137,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:paddingVertical="16dp" />
+                android:paddingVertical="16dp"
+                android:textColor="@color/cardview_dark_background"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton

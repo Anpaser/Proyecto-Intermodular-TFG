@@ -67,6 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="En camino"
+                app:chipBackgroundColor="#CAC7C7"
                 app:chipCornerRadius="12dp" />
 
             <com.google.android.material.chip.Chip
@@ -76,6 +77,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Entregados"
+                app:chipBackgroundColor="#CAC7C7"
                 app:chipCornerRadius="12dp" />
         </LinearLayout>
     </HorizontalScrollView>

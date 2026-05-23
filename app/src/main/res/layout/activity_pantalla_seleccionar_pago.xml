@@ -4,64 +4,148 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA"
-    android:fitsSystemWindows="true"> <RelativeLayout
-    android:id="@+id/toolbarPago"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp"
-    android:background="@color/white"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent">
+    android:fitsSystemWindows="true">
 
-    <ImageButton
-        android:id="@+id/btnBackPago"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerVertical="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/outline_arrow_back_ios_24"
-        app:tint="@android:color/holo_purple" />
-
-    <TextView
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/toolbarPago"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Añadir Tarjeta"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black" />
-</RelativeLayout>
+        android:background="@color/white"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBackPago"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/outline_arrow_back_ios_24"
+            app:tint="@android:color/holo_purple" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Añadir Tarjeta"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/toolbarPago"
         app:layout_constraintBottom_toTopOf="@id/layoutGuardarPago"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/toolbarPago">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"> <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Titular de la tarjeta" android:textStyle="bold" android:textColor="@color/black"/>
-            <EditText android:id="@+id/etTitularTarjeta" android:layout_width="match_parent" android:layout_height="50dp" android:background="@android:color/white" android:paddingHorizontal="16dp" android:layout_marginTop="8dp" android:layout_marginBottom="16dp" android:hint="Nombre del titular de la tarjeta"/>
+            android:padding="24dp">
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Número de tarjeta" android:textStyle="bold" android:textColor="@color/black"/>
-            <EditText android:id="@+id/etNumeroTarjeta" android:layout_width="match_parent" android:layout_height="50dp" android:background="@android:color/white" android:paddingHorizontal="16dp" android:layout_marginTop="8dp" android:layout_marginBottom="16dp" android:inputType="number" android:maxLength="16" android:hint="1234 5678 9101 1121"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Titular de la tarjeta"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:baselineAligned="false">
-                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginEnd="8dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fecha Exp." android:textStyle="bold" android:textColor="@color/black"/>
-                    <EditText android:id="@+id/etFechaExp" android:layout_width="match_parent" android:layout_height="50dp" android:background="@android:color/white" android:paddingHorizontal="16dp" android:layout_marginTop="8dp" android:hint="MM/AA"/>
+            <EditText
+                android:id="@+id/etTitularTarjeta"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:background="@android:color/white"
+                android:hint="Nombre del titular de la tarjeta"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/cardview_dark_background"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Número de tarjeta"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etNumeroTarjeta"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:background="@android:color/white"
+                android:hint="1234 5678 9101 1121"
+                android:inputType="number"
+                android:maxLength="16"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/cardview_dark_background"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fecha Exp."
+                        android:textColor="@color/black"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/etFechaExp"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:color/white"
+                        android:hint="MM/AA"
+                        android:paddingHorizontal="16dp"
+                        android:textColor="@color/cardview_dark_background"/>
                 </LinearLayout>
-                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="8dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CVV" android:textStyle="bold" android:textColor="@color/black"/>
-                    <EditText android:id="@+id/etCVV" android:layout_width="match_parent" android:layout_height="50dp" android:background="@android:color/white" android:paddingHorizontal="16dp" android:layout_marginTop="8dp" android:inputType="numberPassword" android:maxLength="3" android:hint="123"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CVV"
+                        android:textColor="@color/black"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/etCVV"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:color/white"
+                        android:hint="123"
+                        android:inputType="numberPassword"
+                        android:maxLength="3"
+                        android:paddingHorizontal="16dp"
+                        android:textColor="@color/cardview_dark_background"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -72,26 +156,28 @@
         android:id="@+id/layoutGuardarPago"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:cardElevation="16dp"
-        app:cardCornerRadius="24dp"
         android:layout_marginBottom="-20dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp"
             android:paddingTop="20dp"
-            android:paddingBottom="40dp"> <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnUsarTarjeta"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="USAR ESTA TARJETA"
-            android:textStyle="bold"
-            app:cornerRadius="16dp"
-            app:backgroundTint="@android:color/holo_purple" />
+            android:paddingBottom="40dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUsarTarjeta"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="USAR ESTA TARJETA"
+                android:textStyle="bold"
+                app:backgroundTint="@android:color/holo_purple"
+                app:cornerRadius="16dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
