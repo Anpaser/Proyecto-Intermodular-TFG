@@ -1,0 +1,52 @@
+# Nombre del proceso que verás en la pestaña 'Actions' de GitHub
+name: Generate Documentation
+
+# Define CUÁNDO se dispara el robot
+on:
+  push:
+    branches: [ main ] # Solo cuando subes cambios a la rama principal (o 'master')
+
+# Permisos necesarios para que el robot pueda escribir en GitHub Pages 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest # Usará un servidor con Linux (Ubuntu)
+
+    steps:
+      # 1. Copia tu código en el servidor de GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Instala Java (necesario para Android/Gradle)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Da permisos de ejecución al Gradle (PASO CRUCIAL)
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # 4. Ejecuta Dokka para generar el HTML
+      - name: Build with Dokka
+        run: ./gradlew dokkaHtml
+
+      # 5. Prepara el despliegue para GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # 6. Empaqueta los archivos generados (la web de la doc)
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'app/build/dokka/html' # Verifica que tu carpeta de app se llame 'app'
+
+      # 7. Publica la web finalmente
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
