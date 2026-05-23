@@ -2,6 +2,13 @@ package com.example.proyectointermodulartfg.modelo;
 
 import kotlinx.serialization.Serializable;
 
+/**
+ * Clase modelo que representa un producto en el catálogo.
+ *
+ * Incluye información básica del artículo, stock, precio,
+ * imagen y categoría. Es utilizada tanto en la vista principal
+ * como en el carrito y en el panel de ventas.
+ */
 @Serializable
 public class Producto {
     private int id;

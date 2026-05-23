@@ -35,6 +35,12 @@ import kotlin.Pair;
 import kotlinx.serialization.json.JsonElement;
 import kotlinx.serialization.json.JsonObject;
 
+/**
+ * Pantalla principal de la aplicación (Home).
+ *
+ * Muestra el catálogo de productos, permite búsqueda y filtrado
+ * por categoría, y abre el detalle del producto al hacer clic.
+ */
 public class Pantalla_principal extends AppCompatActivity implements ProductoAdapter.OnProductoClickListener {
 
     private SearchView svBusqueda;
@@ -191,7 +197,9 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                         }
 
                         String nombreReal = objeto.getString("nombre");
-                        runOnUiThread(() -> nombrePantalla.setText("Hola, " + nombreReal + " \uD83D\uDC4B"));
+                        String[] partesNombre = nombreReal.trim().split(" ");
+                        String primerNombre = partesNombre[0];
+                        runOnUiThread(() -> nombrePantalla.setText("Hola, " + primerNombre + " \uD83D\uDC4B"));
                     }
                 } catch (Exception e) {
                     runOnUiThread(() -> nombrePantalla.setText("Hola, Usuario \uD83D\uDC4B"));

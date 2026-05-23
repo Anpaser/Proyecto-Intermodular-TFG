@@ -31,6 +31,13 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Activity responsable del proceso final de compra.
+ *
+ * Gestiona la selección de dirección, método de pago,
+ * creación del pedido en Supabase y la generación automática
+ * de la factura en PDF.
+ */
 public class Pantalla_pago_compra extends AppCompatActivity {
 
     private ImageButton btnBackPago;
@@ -54,16 +61,12 @@ public class Pantalla_pago_compra extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pantalla_pago_compra);
 
-        // 1. Enlazamos las vistas
         inicializarVistas();
 
-        // 2. Preparamos los Launchers para los ActivityResult
         configurarLaunchers();
 
-        // 3. Cargamos los datos del Intent
         cargarPrecios();
 
-        // 4. Asignamos todos los clics de botones de forma centralizada
         configurarPulsadores();
     }
 
@@ -143,6 +146,10 @@ public class Pantalla_pago_compra extends AppCompatActivity {
         });
     }
 
+    /**
+     * Procesa la compra completa: guarda dirección, crea pedido,
+     * inserta detalles, actualiza stock y genera la factura PDF.
+     */
     private void procesarCompra() {
         btnFinalizarCompra.setEnabled(false);
         btnFinalizarCompra.setText("Procesando...");

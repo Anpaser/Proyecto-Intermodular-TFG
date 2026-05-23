@@ -19,6 +19,17 @@ import kotlinx.serialization.json.put
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * Clase principal de comunicación con Supabase.
+ *
+ * Contiene todas las operaciones de base de datos (CRUD) y autenticación
+ * de la aplicación Comprahoy. Utiliza corrutinas y runBlocking para
+ * ejecutar las consultas de forma síncrona desde Java.
+ *
+ * @author Angel Paredes Serrano
+ * @version 1.0
+ */
+
 object SupabaseHelper {
 
     @JvmStatic
@@ -378,6 +389,14 @@ object SupabaseHelper {
         return idResult != -1L
     }
 
+    /**
+     * Crea un nuevo pedido en la base de datos.
+     *
+     * @param idUsuario ID del usuario que realiza el pedido
+     * @param idDireccion ID de la dirección de envío
+     * @param precioTotal Precio final del pedido (incluyendo envío)
+     * @return ID del pedido creado o -1 si hubo error
+     */
     @JvmStatic
     fun crearPedido(idUsuario: Long, idDireccion: Long, precioTotal: Double): Long {
         return runBlocking {
@@ -401,19 +420,6 @@ object SupabaseHelper {
             } catch (e: Exception) {
                 android.util.Log.e("ERROR_DB", "Fallo al crear pedido: ${e.message}")
                 -1L
-            }
-        }
-    }
-
-    @JvmStatic
-    fun insertarDetallesPedido(detalles: List<JsonObject>): Boolean {
-        return runBlocking {
-            try {
-                val client = SupabaseManager.getInstance()
-                client.postgrest.from("Detalle_Pedidos").insert(detalles)
-                true
-            } catch (e: Exception) {
-                false
             }
         }
     }
@@ -484,15 +490,8 @@ object SupabaseHelper {
     }
 
     @JvmStatic
-    fun insertarProducto(
-        idUsuario: Long,
-        idCategoria: Long,
-        nombre: String,
-        descripcion: String,
-        precio: Double,
-        imagenUrl: String,
-        stock: Int
-    ): Boolean {
+    fun insertarProducto(idUsuario: Long, idCategoria: Long, nombre: String, descripcion: String, precio: Double, imagenUrl: String, stock: Int)
+    : Boolean {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
@@ -560,15 +559,8 @@ object SupabaseHelper {
     }
 
     @JvmStatic
-    fun actualizarProducto(
-        idProducto: Long,
-        idCategoria: Long,
-        nombre: String,
-        descripcion: String,
-        precio: Double,
-        imagenUrl: String,
-        stock: Int
-    ): Boolean {
+    fun actualizarProducto(idProducto: Long, idCategoria: Long, nombre: String, descripcion: String, precio: Double, imagenUrl: String, stock: Int)
+    : Boolean {
         return runBlocking {
             try {
                 val client = SupabaseManager.getInstance()
@@ -622,24 +614,6 @@ object SupabaseHelper {
                 true
             } catch (e: Exception) {
                 android.util.Log.e("SUPABASE_ADMIN", "Error al borrar registro $id de $nombreTabla: ${e.message}")
-                false
-            }
-        }
-    }
-
-    @JvmStatic
-    fun actualizarFilaGenerica(nombreTabla: String, id: Long, datosJsonString: String): Boolean {
-        return runBlocking {
-            try {
-                val client = SupabaseManager.getInstance()
-                val datosUpdate = Json.decodeFromString<JsonObject>(datosJsonString)
-
-                client.postgrest.from(nombreTabla).update(datosUpdate) {
-                    filter { eq("id", id) }
-                }
-                true
-            } catch (e: Exception) {
-                android.util.Log.e("SUPABASE_UPDATE", e.message ?: "Error")
                 false
             }
         }

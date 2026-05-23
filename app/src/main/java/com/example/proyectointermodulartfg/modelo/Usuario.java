@@ -2,6 +2,15 @@ package com.example.proyectointermodulartfg.modelo;
 
 import kotlinx.serialization.Serializable;
 
+/**
+ * Clase modelo que representa a un usuario de la aplicación.
+ *
+ * Contiene los datos personales y de autenticación. Soporta
+ * tanto usuarios normales como vendedores (id_rol = 1).
+ *
+ * @author Angel Paredes Serrano
+ * @version 1.0
+ */
 @Serializable
 public class Usuario {
     private long id;

@@ -71,9 +71,8 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/divider_horizontal_textfield"
-                    app:tint="@color/black"
-                    tools:srcCompat="@drawable/baseline_arrow_drop_down_24" />
+                    android:src="@drawable/baseline_arrow_drop_down_24"
+                    app:tint="@color/black" />
 
                 <TextView
                     android:id="@+id/tvCarritoCantidad"
