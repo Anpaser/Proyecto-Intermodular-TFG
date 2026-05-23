@@ -666,4 +666,26 @@ object SupabaseHelper {
             }
         }
     }
+
+    @JvmStatic
+    fun obtenerDetallesPedidoConProductos(idPedido: Long): String? {
+        return runBlocking {
+            try {
+                val client = SupabaseManager.getInstance()
+
+                val columnas = io.github.jan.supabase.postgrest.query.Columns.raw("*, Productos(*)")
+
+                val result = client.postgrest.from("Detalle_Pedidos")
+                    .select(columns = columnas) {
+                        filter {
+                            eq("id_pedido", idPedido)
+                        }
+                    }
+                if (result.data == "[]") null else result.data
+            } catch (e: Exception) {
+                android.util.Log.e("SUPABASE_DETALLE_GET", "Fallo crítico: ${e.message}")
+                null
+            }
+        }
+    }
 }

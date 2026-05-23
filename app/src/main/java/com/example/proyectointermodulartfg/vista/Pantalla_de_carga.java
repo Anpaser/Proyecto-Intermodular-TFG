@@ -54,6 +54,12 @@ public class Pantalla_de_carga extends AppCompatActivity {
                             int rol = objeto.getInt("id_rol");
                             String nombre = objeto.optString("nombre", "Usuario");
 
+                            if (id == -1) {
+                                Toast.makeText(this, "Usuario no registrado", Toast.LENGTH_SHORT).show();
+                                irAlLogin();
+                                return;
+                            }
+
                             SharedPreferences prefs = getSharedPreferences("SesionUsuario", MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putLong("id_usuario", id);

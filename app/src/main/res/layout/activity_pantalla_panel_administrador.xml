@@ -7,6 +7,25 @@
     android:background="#F8F9FA"
     android:fitsSystemWindows="true">
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogoutAdmin"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="60dp"
+        android:text="Cerrar sesión"
+        android:textColor="#EF4444"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:fontFamily="sans-serif-medium"
+        app:iconTint="#EF4444"
+        app:iconSize="16dp"
+        app:strokeColor="#EF4444"
+        app:strokeWidth="1dp"
+        app:cornerRadius="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <LinearLayout
         android:id="@+id/headerDashboard"
         android:layout_width="match_parent"
@@ -18,14 +37,13 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="368dp"
             android:layout_height="wrap_content"
-            android:text="Panel de administrador"
-            android:textSize="32sp"
             android:fontFamily="sans-serif-black"
-            android:textColor="#1E293B"
             android:letterSpacing="-0.02"
-            android:gravity="center"/>
+            android:text="Panel de administrador"
+            android:textColor="#1E293B"
+            android:textSize="30sp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -38,10 +56,9 @@
 
         <View
             android:layout_width="wrap_content"
-            android:layout_height="5dp"
+            android:layout_height="4dp"
             android:layout_marginTop="16dp"
-            android:background="@android:color/holo_purple"
-            android:backgroundTint="@android:color/holo_purple" />
+            android:background="@android:color/holo_purple" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

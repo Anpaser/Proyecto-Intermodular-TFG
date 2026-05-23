@@ -38,6 +38,7 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     private long idPedidoRecibido;
     private double precioTotalRecibido;
     private MaterialButton btnDescargarFactura;
+    private DetalleProductosAdapter adapter;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
@@ -80,6 +81,10 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
         rvProductosPedido = findViewById(R.id.rvProductosPedido);
         btnDescargarFactura = findViewById(R.id.btnDescargarFactura);
         rvProductosPedido.setLayoutManager(new LinearLayoutManager(this));
+
+        rvProductosPedido.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new DetalleProductosAdapter(new ArrayList<>());
+        rvProductosPedido.setAdapter(adapter);
     }
 
     private void rellenarDatosCabecera(String fecha) {
@@ -95,18 +100,20 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
 
     private void cargarProductosDelServidor() {
         executorService.execute(() -> {
-            String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Detalle_Pedidos", "id_pedido", String.valueOf(idPedidoRecibido));
+            String jsonRespuesta = SupabaseHelper.obtenerDetallesPedidoConProductos(idPedidoRecibido);
 
-            if (jsonRespuesta != null) {
+            Log.d("DETALLE_PEDIDO_APP", "Respuesta de Supabase para los productos: " + jsonRespuesta);
+
+            if (jsonRespuesta != null && !jsonRespuesta.isEmpty()) {
                 try {
                     JSONArray datosArray = new JSONArray(jsonRespuesta);
                     List<JSONObject> listaProds = new ArrayList<>();
                     for (int i = 0; i < datosArray.length(); i++) {
                         listaProds.add(datosArray.getJSONObject(i));
                     }
+
                     runOnUiThread(() -> {
-                        DetalleProductosAdapter adapter = new DetalleProductosAdapter(listaProds);
-                        rvProductosPedido.setAdapter(adapter);
+                        adapter.actualizarLista(listaProds);
                     });
                 } catch (JSONException e) {
                     Log.e("ERROR_DETALLE", "Error JSON: " + e.getMessage());
@@ -132,6 +139,14 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     private class DetalleProductosAdapter extends RecyclerView.Adapter<DetalleProductosAdapter.ViewHolder> {
         private final List<JSONObject> productos;
 
+        public void actualizarLista(List<JSONObject> nuevaLista) {
+            if (nuevaLista != null) {
+                this.productos.clear();
+                this.productos.addAll(nuevaLista);
+                notifyDataSetChanged();
+            }
+        }
+
         public DetalleProductosAdapter(List<JSONObject> productos) {
             this.productos = productos;
         }
@@ -150,7 +165,14 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
             int cantidad = item.optInt("cantidad", 0);
             double precioUnit = item.optDouble("precio_unitario", 0.0);
 
-            String nombre = item.optString("nombre_producto", "Producto ID: " + item.optLong("id_producto"));
+            String nombre = "Producto desconocido";
+            JSONObject infoProducto = item.optJSONObject("Productos");
+
+            if (infoProducto != null) {
+                nombre = infoProducto.optString("nombre", "Sin nombre");
+            } else {
+                nombre = "Producto ID: " + item.optLong("id_producto");
+            }
 
             holder.tvNombre.setText(nombre);
             holder.tvCantidad.setText("x" + cantidad);
@@ -159,7 +181,7 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return productos.size();
+            return productos != null ? productos.size(): 0;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {

@@ -127,6 +127,10 @@ public class Pantalla_login extends AppCompatActivity {
                     final long idUsuarioFinal = idUsuarioTemp;
 
                     runOnUiThread(() -> {
+                        if (idUsuarioFinal == -1) {
+                            Toast.makeText(this, "Error: No se pudo verificar tu usuario en la base de datos", Toast.LENGTH_LONG).show();
+                            return;
+                        }
                         confirmacionLoginRealizado(correo, rol, idUsuarioFinal);
 
                         Intent intent;

@@ -89,7 +89,7 @@ public class Pantalla_modificar_datos_usuario extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 if (finalErrorClave) {
-                    Toast.makeText(this, "Las claves deben coincidir y tener 6 caracteres", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Las claves deben coincidir", Toast.LENGTH_SHORT).show();
                 } else if (finalAlgunCambio) {
                     Toast.makeText(this, "Cambios guardados con éxito", Toast.LENGTH_SHORT).show();
                     volverAlPerfil();

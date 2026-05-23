@@ -26,8 +26,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,6 +43,7 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
     private HistorialAdapter adapter;
     private long idUsuarioActual = -1;
     private ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private String filtroActual = "Todos";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,28 +96,40 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
             String jsonRespuesta = SupabaseHelper.obtenerDatosTablas("Pedidos", "id_usuario", String.valueOf(idUsuarioActual));
             Log.d("HISTORIAL_APP", "Pedidos obtenidos de la BD: " + jsonRespuesta);
 
-                if (jsonRespuesta != null && !jsonRespuesta.isEmpty()) {
-                    try {
-                        JSONArray arrayPedidos = new JSONArray(jsonRespuesta);
-                        listaCompletaPedidos.clear();
-                        for (int i = 0; i < arrayPedidos.length(); i++) {
-                            listaCompletaPedidos.add(arrayPedidos.getJSONObject(i));
-                        }
-                        runOnUiThread(() -> {
-                            filtrarPedidos("Todos");
-                        });
-                    } catch (JSONException e) {
-                        Log.e("HISTORIAL_APP", "Error parseando pedidos", e);
+            if (jsonRespuesta != null && !jsonRespuesta.isEmpty()) {
+                try {
+                    JSONArray arrayPedidos = new JSONArray(jsonRespuesta);
+                    List<JSONObject> nuevaLista = new ArrayList<>();
+
+                    for (int i = 0; i < arrayPedidos.length(); i++) {
+                        nuevaLista.add(arrayPedidos.getJSONObject(i));
                     }
+
+                    runOnUiThread(() -> {
+                        listaCompletaPedidos.clear();
+                        listaCompletaPedidos.addAll(nuevaLista);
+                        filtrarPedidos(filtroActual);
+                    });
+                } catch (JSONException e) {
+                    Log.e("HISTORIAL_APP", "Error parseando pedidos", e);
                 }
+            }
         });
     }
 
     private void configurarFiltros() {
-        if (chipTodos != null) chipTodos.setOnClickListener(v -> filtrarPedidos("Todos"));
-        if (chipEnCamino != null) chipEnCamino.setOnClickListener(v -> filtrarPedidos("En camino"));
-        if (chipEntregados != null)
-            chipEntregados.setOnClickListener(v -> filtrarPedidos("Entregados"));
+        if (chipTodos != null) chipTodos.setOnClickListener(v -> {
+            filtroActual = "Todos";
+            cargarPedidosDesdeBD();
+        });
+        if (chipEnCamino != null) chipEnCamino.setOnClickListener(v -> {
+            filtroActual = "En camino";
+            cargarPedidosDesdeBD();
+        });
+        if (chipEntregados != null) chipEntregados.setOnClickListener(v -> {
+            filtroActual = "Entregados";
+            cargarPedidosDesdeBD();
+        });
     }
 
     private void filtrarPedidos(String filtro) {
@@ -168,9 +184,11 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
             String fecha = pedido.optString("fecha", "Sin fecha");
             double precioTotal = pedido.optDouble("precio_total", 0.0);
 
+            String fechaSimple = formatearFecha(fecha);
+
             holder.tvPedidoId.setText("Pedido #" + idPedido);
             holder.tvPedidoEstado.setText(estado.toUpperCase());
-            holder.tvPedidoFecha.setText("Realizado el " + fecha);
+            holder.tvPedidoFecha.setText("Realizado el " + fechaSimple);
             holder.tvPedidoPrecioTotal.setText(String.format("%.2f €", precioTotal));
 
             if (estado.toLowerCase().contains("entregado")) {
@@ -196,6 +214,31 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return pedidos != null ? pedidos.size() : 0;
+        }
+
+        private String formatearFecha(String fechaOriginal) {
+            if (fechaOriginal == null || fechaOriginal.equals("Sin fecha") || fechaOriginal.isEmpty()) {
+                return fechaOriginal;
+            }
+            try {
+                String cleanDate = fechaOriginal;
+                if (cleanDate.contains(".")) {
+                    cleanDate = cleanDate.substring(0, cleanDate.indexOf("."));
+                } else if (cleanDate.contains("+")) {
+                    cleanDate = cleanDate.substring(0, cleanDate.indexOf("+"));
+                } else if (cleanDate.contains("Z")) {
+                    cleanDate = cleanDate.substring(0, cleanDate.indexOf("Z"));
+                }
+
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                Date date = inputFormat.parse(cleanDate);
+
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                return outputFormat.format(date);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return fechaOriginal;
+            }
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
