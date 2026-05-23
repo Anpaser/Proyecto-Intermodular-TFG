@@ -6,7 +6,7 @@ on:
   push:
     branches: [ main ] # Solo cuando subes cambios a la rama principal (o 'master')
 
-# Permisos necesarios para que el robot pueda escribir en GitHub Pages 
+# Permisos necesarios para que el robot pueda escribir en GitHub Pages
 permissions:
   contents: read
   pages: write
