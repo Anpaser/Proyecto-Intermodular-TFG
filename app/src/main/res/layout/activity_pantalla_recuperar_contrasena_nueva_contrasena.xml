@@ -40,13 +40,15 @@
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusBottomStart="16dp"
             app:boxCornerRadiusBottomEnd="16dp"
-            app:boxStrokeColor="@android:color/holo_purple">
+            app:hintTextColor="#6B6969"
+            app:boxStrokeColor="#6B6969" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etNuevaContrasena"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"
+                android:textColor="#6B6969"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -59,13 +61,15 @@
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusBottomStart="16dp"
             app:boxCornerRadiusBottomEnd="16dp"
-            app:boxStrokeColor="@android:color/holo_purple">
+            app:hintTextColor="#6B6969"
+            app:boxStrokeColor="#6B6969" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etNuevaContrasenaRep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"
+                android:textColor="#6B6969"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -76,6 +80,7 @@
             android:text="MODIFICAR"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="@color/white"
             app:backgroundTint="@android:color/holo_purple"
             app:cornerRadius="16dp"
             app:elevation="4dp" />
