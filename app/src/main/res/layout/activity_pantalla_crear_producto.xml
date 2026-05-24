@@ -146,7 +146,8 @@
                         android:layout_height="wrap_content"
                         android:inputType="none"
                         android:padding="16dp"
-                        android:textColor="#6B6969"/>
+                        android:textColor="#6B6969"
+                        android:popupBackground="@android:color/white"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout

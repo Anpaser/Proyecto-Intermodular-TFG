@@ -120,7 +120,7 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     }
 
     private void descargarFacturaPdf() {
-        String urlFactura = "https://owseadckiffiwwnjgqgj.supabase.co/storage/v1/object/public/Facturas/Factura_pedido_%20" + idPedidoRecibido + ".pdf";
+        String urlFactura = "https://owseadckiffiwwnjgqgj.supabase.co/storage/v1/object/public/Facturas/Factura_pedido_ " + idPedidoRecibido + ".pdf";
 
         try {
             Toast.makeText(this, "Abriendo factura...", Toast.LENGTH_SHORT).show();
