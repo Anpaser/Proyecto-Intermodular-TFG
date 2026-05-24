@@ -58,13 +58,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:hint="Nombre del producto">
+                    android:hint="Nombre del producto"
+                    app:hintTextColor="#6B6969"
+                    app:boxStrokeColor="#6B6969">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNombreProducto"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textCapSentences"
-                        android:maxLines="1"/>
+                        android:maxLines="1"
+                        android:textColor="#6B6969"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -72,14 +75,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:hint="Descripción">
+                    android:hint="Descripción"
+                    app:hintTextColor="#6B6969"
+                    app:boxStrokeColor="#6B6969">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etDescripcionProducto"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textMultiLine"
                         android:lines="3"
-                        android:gravity="top"/>
+                        android:gravity="top"
+                        android:textColor="#6B6969"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout
@@ -95,13 +101,16 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:hint="Precio (€)">
+                        android:hint="Precio (€)"
+                        app:hintTextColor="#6B6969"
+                        app:boxStrokeColor="#6B6969">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPrecioProducto"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="numberDecimal"
-                            android:maxLines="1"/>
+                            android:maxLines="1"
+                            android:textColor="#6B6969"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -110,13 +119,16 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:hint="Stock inicial">
+                        android:hint="Stock inicial"
+                        app:hintTextColor="#6B6969"
+                        app:boxStrokeColor="#6B6969">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etStockProducto"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="number"
-                            android:maxLines="1"/>
+                            android:maxLines="1"
+                            android:textColor="#6B6969"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
@@ -125,26 +137,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:hint="Categoría">
+                    android:hint="Categoría"
+                    app:hintTextColor="#6B6969"
+                    app:boxStrokeColor="#6B6969">
                     <AutoCompleteTextView
                         android:id="@+id/autoCategoria"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none"
-                        android:padding="16dp"/>
+                        android:padding="16dp"
+                        android:textColor="#6B6969"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="URL de la Imagen">
+                    android:hint="URL de la Imagen"
+                    app:hintTextColor="#6B6969"
+                    app:boxStrokeColor="#6B6969">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etImagenProducto"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textUri"
-                        android:maxLines="1"/>
+                        android:maxLines="1"
+                        android:textColor="#6B6969"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>

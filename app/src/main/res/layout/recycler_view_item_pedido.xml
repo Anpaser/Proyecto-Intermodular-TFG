@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="8dp"
-    app:cardBackgroundColor="#B3B1B1"
+    app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="16dp"
     app:cardElevation="2dp">
 
@@ -68,13 +68,6 @@
                     android:textColor="@color/black"
                     android:textSize="13sp" />
 
-                <TextView
-                    android:id="@+id/tvPedidoItems"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="3 productos comprados"
-                    android:textColor="@color/black"
-                    android:textSize="14sp" />
             </LinearLayout>
 
             <TextView

@@ -68,7 +68,7 @@
                 android:background="@android:color/white"
                 android:hint="Nombre del titular de la tarjeta"
                 android:paddingHorizontal="16dp"
-                android:textColor="@color/cardview_dark_background"/>
+                android:textColor="#6B6969"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -88,7 +88,7 @@
                 android:inputType="number"
                 android:maxLength="16"
                 android:paddingHorizontal="16dp"
-                android:textColor="@color/cardview_dark_background"/>
+                android:textColor="#6B6969"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -118,7 +118,7 @@
                         android:background="@android:color/white"
                         android:hint="MM/AA"
                         android:paddingHorizontal="16dp"
-                        android:textColor="@color/cardview_dark_background"/>
+                        android:textColor="#6B6969"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -145,7 +145,7 @@
                         android:inputType="numberPassword"
                         android:maxLength="3"
                         android:paddingHorizontal="16dp"
-                        android:textColor="@color/cardview_dark_background"/>
+                        android:textColor="#6B6969"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -168,7 +168,8 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp"
             android:paddingTop="20dp"
-            android:paddingBottom="40dp">
+            android:paddingBottom="40dp"
+            android:background="#EFEBEB">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnUsarTarjeta"
@@ -176,6 +177,7 @@
                 android:layout_height="60dp"
                 android:text="USAR ESTA TARJETA"
                 android:textStyle="bold"
+                android:textColor="@color/white"
                 app:backgroundTint="@android:color/holo_purple"
                 app:cornerRadius="16dp" />
         </LinearLayout>

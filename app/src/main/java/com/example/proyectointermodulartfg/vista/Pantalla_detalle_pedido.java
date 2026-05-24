@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 public class Pantalla_detalle_pedido extends AppCompatActivity {
 
     private ImageButton btnBackDetalle;
-    private TextView tvIdPedido, tvFechaPedido, tvSubtotalDetalle, tvTotalDetalle;
+    private TextView tvIdPedido, tvSubtotalDetalle, tvTotalDetalle;
     private RecyclerView rvProductosPedido;
     private long idPedidoRecibido;
     private double precioTotalRecibido;
@@ -50,10 +50,9 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
 
         idPedidoRecibido = getIntent().getLongExtra("ID_PEDIDO", -1);
         precioTotalRecibido = getIntent().getDoubleExtra("PRECIO_TOTAL", 0.0);
-        String fecha = getIntent().getStringExtra("FECHA_PEDIDO");
 
         if (idPedidoRecibido != -1) {
-            rellenarDatosCabecera(fecha);
+            rellenarDatosCabecera();
             cargarProductosDelServidor();
         } else {
             Toast.makeText(this, "Error al cargar el detalle", Toast.LENGTH_SHORT).show();
@@ -75,7 +74,6 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
     private void vincularVistas() {
         btnBackDetalle = findViewById(R.id.btnBackDetalle);
         tvIdPedido = findViewById(R.id.tvIdPedido);
-        tvFechaPedido = findViewById(R.id.tvFechaPedido);
         tvSubtotalDetalle = findViewById(R.id.tvSubtotalDetalle);
         tvTotalDetalle = findViewById(R.id.tvTotalDetalle);
         rvProductosPedido = findViewById(R.id.rvProductosPedido);
@@ -87,9 +85,8 @@ public class Pantalla_detalle_pedido extends AppCompatActivity {
         rvProductosPedido.setAdapter(adapter);
     }
 
-    private void rellenarDatosCabecera(String fecha) {
+    private void rellenarDatosCabecera() {
         tvIdPedido.setText("Pedido " + idPedidoRecibido);
-        tvFechaPedido.setText("Realizado " + (fecha != null ? fecha : "recientemente"));
 
         double costoEnvio = 5.50;
         double subtotal = precioTotalRecibido - costoEnvio;

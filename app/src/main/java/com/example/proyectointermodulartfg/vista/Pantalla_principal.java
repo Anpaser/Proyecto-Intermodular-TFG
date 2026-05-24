@@ -92,6 +92,18 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
         adapter = new ProductoAdapter(listaProductos, this);
         rvProductos.setAdapter(adapter);
 
+        findViewById(R.id.main).setOnTouchListener((v, event) -> {
+            if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                if (svBusqueda.hasFocus()) {
+                    svBusqueda.clearFocus();
+                    hideKeyboard();
+                    v.performClick();
+                    return true;
+                }
+            }
+            return false;
+        });
+
         obtenerIdUsuarioYNombre();
         configurarListeners();
         cargarProductos("", "Todos");
@@ -121,9 +133,12 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
             if (checkedIds.isEmpty()) {
                 categoriaSeleccionada = "Todos";
             } else {
-                Chip chip = findViewById(checkedIds.get(0));
-                categoriaSeleccionada = chip.getText().toString();
+                Chip chipSeleccionado = findViewById(checkedIds.get(0));
+                categoriaSeleccionada = chipSeleccionado.getText().toString();
             }
+
+            actualizarColoresChips(checkedIds);
+
             cargarProductos(svBusqueda.getQuery().toString(), categoriaSeleccionada);
         });
 
@@ -175,6 +190,47 @@ public class Pantalla_principal extends AppCompatActivity implements ProductoAda
                 });
             }
         });
+
+        svBusqueda.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                svBusqueda.setBackgroundColor(getResources().getColor(R.color.gray_ligth));
+            } else {
+                svBusqueda.setBackgroundColor(getResources().getColor(R.color.white));
+            }
+        });
+    }
+
+    private void actualizarColoresChips(List<Integer> checkedIds) {
+        int morado = getResources().getColor(android.R.color.holo_purple);
+        int blanco = getResources().getColor(android.R.color.white);
+
+        for (int i = 0; i < cgCategorias.getChildCount(); i++) {
+            View vista = cgCategorias.getChildAt(i);
+            if (vista instanceof Chip) {
+                Chip chip = (Chip) vista;
+
+                if (chip.getId() == R.id.chipTodos) {
+                    chip.setTextColor(blanco);
+                    continue;
+                }
+
+                boolean estaSeleccionado = checkedIds.contains(chip.getId());
+
+                if (estaSeleccionado) {
+                    chip.setTextColor(morado);
+                } else {
+                    chip.setTextColor(blanco);
+                }
+            }
+        }
+    }
+
+    private void hideKeyboard() {
+        android.view.inputmethod.InputMethodManager imm =
+                (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+        if (imm != null && getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
     private void obtenerIdUsuarioYNombre() {

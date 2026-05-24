@@ -118,16 +118,21 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
     }
 
     private void configurarFiltros() {
-        if (chipTodos != null) chipTodos.setOnClickListener(v -> {
+        chipTodos.setOnClickListener(v -> {
             filtroActual = "Todos";
+            actualizarColoresChipsHistorial("Todos");
             cargarPedidosDesdeBD();
         });
-        if (chipEnCamino != null) chipEnCamino.setOnClickListener(v -> {
+
+        chipEnCamino.setOnClickListener(v -> {
             filtroActual = "En camino";
+            actualizarColoresChipsHistorial("En camino");
             cargarPedidosDesdeBD();
         });
-        if (chipEntregados != null) chipEntregados.setOnClickListener(v -> {
+
+        chipEntregados.setOnClickListener(v -> {
             filtroActual = "Entregados";
+            actualizarColoresChipsHistorial("Entregados");
             cargarPedidosDesdeBD();
         });
     }
@@ -250,7 +255,6 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
                 tvPedidoId = itemView.findViewById(R.id.tvPedidoId);
                 tvPedidoEstado = itemView.findViewById(R.id.tvPedidoEstado);
                 tvPedidoFecha = itemView.findViewById(R.id.tvPedidoFecha);
-                tvPedidoItems = itemView.findViewById(R.id.tvPedidoItems);
                 tvPedidoPrecioTotal = itemView.findViewById(R.id.tvPedidoPrecioTotal);
                 btnVerDetalles = itemView.findViewById(R.id.btnVerDetalles);
             }
@@ -261,5 +265,16 @@ public class Pantalla_historial_pedidos_realizados extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (executorService != null) executorService.shutdown();
+    }
+
+    private void actualizarColoresChipsHistorial(String filtroSeleccionado) {
+        int morado = getResources().getColor(android.R.color.holo_purple);
+        int blanco = getResources().getColor(android.R.color.white);
+
+        chipTodos.setTextColor(blanco);
+
+        chipEnCamino.setTextColor(filtroSeleccionado.equals("En camino") ? morado : blanco);
+
+        chipEntregados.setTextColor(filtroSeleccionado.equals("Entregados") ? morado : blanco);
     }
 }

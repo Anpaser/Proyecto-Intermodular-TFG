@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/white"
     android:fitsSystemWindows="true">
 
     <RelativeLayout
@@ -223,7 +223,8 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp"
             android:paddingTop="20dp"
-            android:paddingBottom="40dp">
+            android:paddingBottom="40dp"
+            android:background="#EFEBEB">
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnFinalizarCompra"
                 android:layout_width="match_parent"
@@ -231,6 +232,7 @@
                 android:text="CONFIRMAR Y PAGAR"
                 android:textStyle="bold"
                 app:cornerRadius="16dp"
+                android:textColor="@color/white"
                 app:backgroundTint="@android:color/holo_purple" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

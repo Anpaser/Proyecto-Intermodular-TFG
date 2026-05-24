@@ -56,7 +56,8 @@
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusBottomEnd="16dp"
-                app:boxStrokeColor="@android:color/holo_purple"
+                app:hintTextColor="#6B6969"
+                app:boxStrokeColor="#6B6969"
                 android:layout_marginBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -64,7 +65,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPersonName"
-                    android:textColor="@color/cardview_dark_background"/>
+                    android:textColor="#6B6969"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -76,7 +77,8 @@
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusBottomEnd="16dp"
-                app:boxStrokeColor="@android:color/holo_purple"
+                app:hintTextColor="#6B6969"
+                app:boxStrokeColor="#6B6969"
                 android:layout_marginBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -84,7 +86,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone"
-                    android:textColor="@color/cardview_dark_background"/>
+                    android:textColor="#6B6969"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -97,7 +99,9 @@
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusBottomEnd="16dp"
-                app:boxStrokeColor="@android:color/holo_purple"
+                app:passwordToggleTint="#6B6969"
+                app:hintTextColor="#6B6969"
+                app:boxStrokeColor="#6B6969"
                 android:layout_marginBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -105,7 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="@color/cardview_dark_background"/>
+                    android:textColor="#6B6969"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -118,14 +122,16 @@
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusBottomEnd="16dp"
-                app:boxStrokeColor="@android:color/holo_purple">
+                app:passwordToggleTint="#6B6969"
+                app:hintTextColor="#6B6969"
+                app:boxStrokeColor="#6B6969">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etModificarClaveRep"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="@color/cardview_dark_background"/>
+                    android:textColor="#6B6969"/>
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
@@ -138,9 +144,12 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginBottom="24dp"
         android:text="GUARDAR CAMBIOS"
+        android:textColor="@color/white"
         android:textStyle="bold"
-        app:cornerRadius="16dp"
         app:backgroundTint="@android:color/holo_purple"
-        app:layout_constraintBottom_toBottomOf="parent" />
+
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="24dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -68,13 +68,15 @@
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusBottomStart="16dp"
             app:boxCornerRadiusBottomEnd="16dp"
-            app:boxStrokeColor="@android:color/holo_purple">
+            app:hintTextColor="#6B6969"
+            app:boxStrokeColor="#6B6969">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
+                android:textColor="#6B6969"
                 android:paddingVertical="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,11 +87,13 @@
             android:layout_marginTop="16dp"
             android:hint="Contraseña"
             app:passwordToggleEnabled="true"
+            app:passwordToggleTint="#6B6969"
             app:boxCornerRadiusTopStart="16dp"
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusBottomStart="16dp"
             app:boxCornerRadiusBottomEnd="16dp"
-            app:boxStrokeColor="@android:color/holo_purple">
+            app:hintTextColor="#6B6969"
+            app:boxStrokeColor="#6B6969">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPassword"
@@ -97,7 +101,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
                 android:paddingVertical="16dp"
-                android:textColor="@color/cardview_dark_background"/>
+                android:textColor="#6B6969"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
